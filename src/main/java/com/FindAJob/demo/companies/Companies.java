@@ -16,18 +16,18 @@ public class Companies {
     private String comp_email;
 
 
-    public Companies(String comp_name, String location, String comp_email){
+    public Companies(String comp_name, String location, String comp_email) {
         this.comp_name = comp_name;
         this.location = location;
         this.comp_email = comp_email;
 
     }
 
-    public Companies(){
+    public Companies() {
 
     }
 
-    public Long getId(){
+    public Long getId() {
         return id;
     }
 
@@ -54,4 +54,5 @@ public class Companies {
     public void setComp_email(String comp_email) {
         this.comp_email = comp_email;
     }
+
 }

@@ -1,10 +1,9 @@
 package com.FindAJob.demo.companies;
 
-import com.FindAJob.demo.companies.internal.CompService;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping
+@RequestMapping(path = "/app/comp")
 public class CompController {
 
     private final CompService service;
@@ -14,13 +13,13 @@ public class CompController {
 
     }
 
-    @PostMapping
+    @PostMapping(path = "/create")
     public CompResponseDTO createCompany(@RequestBody CompRequestDTO request){
         return service.addCompany(request);
     }
 
-    @PatchMapping
-    public CompResponseDTO updateCompany(@RequestBody CompRequestDTO request, Long id){
+    @PatchMapping(path = "/update/{id}")
+    public CompResponseDTO updateCompany(@RequestBody CompRequestDTO request, @PathVariable Long id){
         return service.updateCompany(request, id);
     }
 

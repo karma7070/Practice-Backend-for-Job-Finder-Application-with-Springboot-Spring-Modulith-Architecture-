@@ -1,9 +1,10 @@
 package com.FindAJob.demo.jobs.internal;
 
-import com.FindAJob.demo.jobs.JobRequestDTO;
-import com.FindAJob.demo.jobs.JobResponseDTO;
-import com.FindAJob.demo.jobs.Jobs;
+import com.FindAJob.demo.companies.CompService;
+import com.FindAJob.demo.companies.Companies;
+import com.FindAJob.demo.jobs.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -13,12 +14,14 @@ import java.util.Optional;
 @Service
 public class JobsService {
     private final JobsRepository repository;
-    private final JobsService service;
+    private final CompService compservice;
+    private final ApplicationEventPublisher publisher;
 
     @Autowired
-    public JobsService(JobsRepository repository, JobsService service){
+    public JobsService(JobsRepository repository, CompService compservice, ApplicationEventPublisher publisher){
         this.repository = repository;
-        this.service = service;
+        this.compservice = compservice;
+        this.publisher = publisher;
     }
             ////////////////////////////////////////////
 ///////////////     END-POINT LOGIC STARTS HERE   /////////////////////////////////////////////////////
@@ -47,27 +50,54 @@ public class JobsService {
         return responses;
     }
 
+// Get job by Id
+   public JobResponseDTO getAJob(Long id) {
+       Optional<Jobs> job = repository.findById(id);
+
+       if (job.isPresent()) {
+           return JobResponseDTO.from(job.get());
+       }
+       return null;
+   }
+
 //Add job to DB
 
     public JobResponseDTO addJob(JobRequestDTO request){
+
+    Companies comp = compservice.getCompId(request.compId());
+
+    if(comp == null){
+        throw new RuntimeException("Company not Found");
+    }
+
         Jobs job = new Jobs(
                 request.job_title(),
                 request.description(),
+                request.salary(),
                 request.field(),
                 request.availability(),
                 request.posted_at(),
-                request.posted_by()
+                request.posted_by() ,
+                comp
         );
 
+        job.setPosted_by(comp.getComp_name());
+
         repository.save(job);
+
+        JobCreatedEvent event = new JobCreatedEvent(job.getId(), job.getJob_title());
+
+        publisher.publishEvent(event);
 
         JobResponseDTO response = new JobResponseDTO(
                 job.getJob_title(),
                 job.getDescription(),
+                job.getSalary(),
                 job.getField(),
                 job.getAvailability(),
                 job.getPosted_at(),
-                job.getPosted_by()
+                job.getPosted_by(),
+                job.getCompany().getId()
         );
 
         return response;
@@ -94,13 +124,29 @@ public class JobsService {
 
         //note: you'll have to make sure fields aren't empty when reassigning values
 
-       Jobs updatedJob = service.checkAndReturn(request,optionaljob.get());
+       Jobs updatedJob = this.checkAndReturn(request,optionaljob.get());
 
       repository.save(updatedJob);
 
       return JobResponseDTO.from(updatedJob);
     }
+    
+//Delete job
 
+    public JobResponseDTO deleteJob(Long id){
+        Optional<Jobs> job = repository.findById(id);
+
+        if(!(job.isEmpty())) {
+
+            JobDeletedEvent event = new JobDeletedEvent(job.get().getId(), job.get().getJob_title());
+
+            publisher.publishEvent(event);
+
+            repository.deleteById(id);
+        }
+
+        return null;
+    }
 
 
 

@@ -12,11 +12,9 @@ import java.util.Optional;
 public class Reg_UsersService {
 
     private final Reg_UsersRepository userRepository;
-    private final Reg_UsersService userService;
 
-    public Reg_UsersService(Reg_UsersRepository userRepository, Reg_UsersService userService){
+    public Reg_UsersService(Reg_UsersRepository userRepository){
         this.userRepository = userRepository;
-        this.userService = userService;
     }
 
 
@@ -24,7 +22,7 @@ public class Reg_UsersService {
 
     public Reg_UserResponseDTO CreateUser(Reg_UserRequestDTO request){
 
-        Reg_Users user1 = userService.RequestToUser(request);
+        Reg_Users user1 = this.RequestToUser(request);
 
         userRepository.save(user1);
 
@@ -35,7 +33,7 @@ public class Reg_UsersService {
 
 //Update User details
 
-    public Reg_UserResponseDTO updateCompany(Reg_UserRequestDTO request, Long id){
+    public Reg_UserResponseDTO updateUser(Reg_UserRequestDTO request, Long id){
 
         Optional<Reg_Users> opt_user1 = userRepository.findById(id);
 
@@ -43,9 +41,19 @@ public class Reg_UsersService {
             throw new RuntimeException("Company doesn't exist!!");
         }
 
-        Reg_Users user2 = userService.checkAndReturn(request, opt_user1.get());
+        Reg_Users user2 = this.checkAndReturn(request, opt_user1.get());
 
         return Reg_UserResponseDTO.from(user2);
+    }
+
+    public Reg_UserResponseDTO deleteUser(Long id){
+        Optional<Reg_Users> user = userRepository.findById(id);
+
+        if(!(user.isEmpty())) {
+            userRepository.deleteById(id);
+        }
+
+        return null;
     }
 
 
