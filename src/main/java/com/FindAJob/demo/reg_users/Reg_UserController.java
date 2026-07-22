@@ -1,6 +1,5 @@
 package com.FindAJob.demo.reg_users;
 
-import com.FindAJob.demo.reg_users.internal.Reg_UsersService;
 import org.springframework.web.bind.annotation.*;
 
 @RestController

@@ -1,6 +1,5 @@
 package com.FindAJob.demo.jobs;
 
-import com.FindAJob.demo.jobs.internal.JobsService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

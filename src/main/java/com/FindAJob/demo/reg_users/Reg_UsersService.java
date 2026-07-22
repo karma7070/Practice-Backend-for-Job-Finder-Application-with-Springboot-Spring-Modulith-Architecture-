@@ -1,9 +1,7 @@
-package com.FindAJob.demo.reg_users.internal;
+package com.FindAJob.demo.reg_users;
 
 
-import com.FindAJob.demo.reg_users.Reg_UserRequestDTO;
-import com.FindAJob.demo.reg_users.Reg_UserResponseDTO;
-import com.FindAJob.demo.reg_users.Reg_Users;
+import com.FindAJob.demo.reg_users.internal.Reg_UsersRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -66,9 +64,9 @@ public class Reg_UsersService {
 
 
 
-    ////////////////////////////
+               ////////////////////////////
     /////////////  Service functions    /////////////////////////////////
-    ///////////////////////////
+               ///////////////////////////
 
 //Converting requestDTO to company object
     public Reg_Users RequestToUser(Reg_UserRequestDTO request){
@@ -108,6 +106,11 @@ public class Reg_UsersService {
         }
 
         return user;
+    }
+
+    public Reg_Users getUser(Long id){
+        return userRepository.findById(id).
+                orElseThrow(() -> new RuntimeException("User not Found"));
     }
 
 }
