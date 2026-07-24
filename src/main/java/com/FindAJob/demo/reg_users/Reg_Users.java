@@ -13,17 +13,20 @@ public class Reg_Users {
     private Gen_Type gender;
     private String profession;
     private String email;
+    private String password;
 
     public Reg_Users(String name,
                      Integer age,
                      Gen_Type gender,
                      String profession,
-                     String email){
+                     String email,
+                     String password){
         this.name = name;
         this.age = age;
         this.gender = gender;
         this.profession = profession;
         this.email = email;
+        this.password = password;
     }
 
     public Reg_Users(){
@@ -72,6 +75,14 @@ public class Reg_Users {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public void setPassword(String password){
+        this.password = password;
+    }
+
+    public String getPassword(){
+        return password;
     }
 
 }

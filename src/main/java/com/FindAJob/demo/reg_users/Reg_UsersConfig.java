@@ -25,7 +25,8 @@ public class Reg_UsersConfig implements CommandLineRunner {
                             26,
                             Gen_Type.FEMALE,
                             "Accountant",
-                            "grace.wilson@example.com"
+                            "grace.wilson@example.com",
+                            "ebualnelkna"
                     ),
 
                     new Reg_Users(
@@ -33,7 +34,8 @@ public class Reg_UsersConfig implements CommandLineRunner {
                             31,
                             Gen_Type.MALE,
                             "Lawyer",
-                            "daniel.smith@example.com"
+                            "daniel.smith@example.com",
+                            "ebualnelkna"
                     ),
 
                     new Reg_Users(
@@ -41,7 +43,8 @@ public class Reg_UsersConfig implements CommandLineRunner {
                             24,
                             Gen_Type.FEMALE,
                             "Nurse",
-                            "emily.davis@example.com"
+                            "emily.davis@example.com",
+                            "ebualnelkna"
                     ),
 
                     new Reg_Users(
@@ -49,7 +52,8 @@ public class Reg_UsersConfig implements CommandLineRunner {
                             29,
                             Gen_Type.MALE,
                             "Backend Developer",
-                            "james.anderson@example.com"
+                            "james.anderson@example.com",
+                            "ebualnelkna"
                     ),
 
                     new Reg_Users(
@@ -57,7 +61,8 @@ public class Reg_UsersConfig implements CommandLineRunner {
                             23,
                             Gen_Type.FEMALE,
                             "UI/UX Designer",
-                            "sophia.taylor@example.com"
+                            "sophia.taylor@example.com",
+                            "ebualnelkna"
                     ),
 
                     new Reg_Users(
@@ -65,7 +70,8 @@ public class Reg_UsersConfig implements CommandLineRunner {
                             33,
                             Gen_Type.MALE,
                             "Cybersecurity Analyst",
-                            "david.williams@example.com"
+                            "david.williams@example.com",
+                            "ebualnelkna"
                     ),
 
                     new Reg_Users(
@@ -73,7 +79,8 @@ public class Reg_UsersConfig implements CommandLineRunner {
                             30,
                             Gen_Type.FEMALE,
                             "Data Scientist",
-                            "olivia.martinez@example.com"
+                            "olivia.martinez@example.com",
+                            "ebualnelkna"
                     )
 
             );

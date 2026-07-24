@@ -28,7 +28,7 @@ public class Application {
         this.user = user;
         this.info = info;
         this.applied_at = Instant.now();
-        this.status = status;
+        this.status = AppStatus.PENDING;
     }
 
     public Application(){
@@ -72,7 +72,8 @@ public class Application {
         return status;
     }
 
-    public void setStatus(AppStatus status) {
+    public void setStatus(AppStatus status){
         this.status = status;
     }
+
 }

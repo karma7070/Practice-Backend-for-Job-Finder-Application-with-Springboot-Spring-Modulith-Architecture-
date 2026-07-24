@@ -5,6 +5,8 @@ public record Reg_UserRequestDTO(
         Integer age,
         Gen_Type gender,
         String profession,
+        String password,
+        String confPassword,
         String email
 ) {
 }
