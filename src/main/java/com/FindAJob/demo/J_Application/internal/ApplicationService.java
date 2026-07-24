@@ -1,10 +1,7 @@
 package com.FindAJob.demo.J_Application.internal;
 
 
-import com.FindAJob.demo.J_Application.Application;
-import com.FindAJob.demo.J_Application.ApplicationMadeEvent;
-import com.FindAJob.demo.J_Application.ApplicationReqDTO;
-import com.FindAJob.demo.J_Application.ApplicationResDTO;
+import com.FindAJob.demo.J_Application.*;
 import com.FindAJob.demo.jobs.Jobs;
 import com.FindAJob.demo.jobs.JobsService;
 import com.FindAJob.demo.reg_users.Reg_Users;
@@ -12,8 +9,10 @@ import com.FindAJob.demo.reg_users.Reg_UsersService;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ApplicationService {
@@ -43,15 +42,18 @@ public class ApplicationService {
 
     public ApplicationResDTO createApn(ApplicationReqDTO request){
 
-        Jobs job = jService.getJob(request.jobId());
+        ApplicationReqDTO request2 = this.checkForEmptyReq(request);
 
-        Reg_Users user = uService.getUser(request.userId());
+        Jobs job = jService.getJob(request2.jobId());
+
+        Reg_Users user = uService.getUser(request2.userId());
 
         Application app1 = new Application(job,
                                             user,
-                                            request.info(),
-                                            request.applied_at(),
-                                            request.status());
+                                            request2.info(),
+                                            Instant.now(),
+                                            AppStatus.PENDING);
+                                            
         repository.save(app1);
 
         ApplicationMadeEvent event = new ApplicationMadeEvent(app1.getId(), app1.getUser().getId(), app1.getInfo());
@@ -61,6 +63,27 @@ public class ApplicationService {
         ApplicationResDTO response = ApplicationResDTO.from(app1);
 
         return response;
+    }
+
+//Company approves application
+    public ApplicationResDTO setStatus(AppStatusDTO appStatus, Long id){
+
+        Optional<Application> apn = repository.findById(id);
+        if(apn.isEmpty()){
+            throw new RuntimeException("Application doesn't exist");
+        }
+
+        if(appStatus.status() == AppStatus.APPROVED) {
+            apn.get().setStatus(AppStatus.APPROVED);
+        }
+          else if(appStatus.status() == AppStatus.DENIED){
+              apn.get().setStatus(AppStatus.DENIED);
+        } else {
+              apn.get().setStatus(AppStatus.PENDING);
+        }
+          repository.save(apn.get());
+
+     return ApplicationResDTO.from(apn.get());
     }
 
     //update application
@@ -79,5 +102,17 @@ public class ApplicationService {
        }
 
        return resps;
+    }
+
+    public ApplicationReqDTO checkForEmptyReq(ApplicationReqDTO request){
+
+       if(request.jobId() == null
+               || request.userId() == null
+               || request.info() == null
+               ){
+         throw new RuntimeException("Request has an Empty value");
+       }
+
+       return request;
     }
 }

@@ -4,6 +4,7 @@ package com.FindAJob.demo.reg_users;
 import com.FindAJob.demo.reg_users.internal.Reg_UsersRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -20,7 +21,9 @@ public class Reg_UsersService {
 
     public Reg_UserResponseDTO CreateUser(Reg_UserRequestDTO request){
 
-        Reg_Users user1 = this.RequestToUser(request);
+
+
+        Reg_Users user1 = this.createCheck(request);
 
         userRepository.save(user1);
 
@@ -39,7 +42,7 @@ public class Reg_UsersService {
             throw new RuntimeException("Company doesn't exist!!");
         }
 
-        Reg_Users user2 = this.checkAndReturn(request, opt_user1.get());
+        Reg_Users user2 = this.updateCheck(request, opt_user1.get());
 
         return Reg_UserResponseDTO.from(user2);
     }
@@ -75,15 +78,54 @@ public class Reg_UsersService {
                 request.age(),
                 request.gender(),
                 request.profession(),
+                request.password(),
                 request.email()
         );
 
         return user;
     }
 
+//Checking user request before creating user account and verifying password as well
+
+    public boolean confirmPswrd(String pass, String cfPass){
+
+            if(Objects.equals(pass, cfPass)){//used to compare if strings are equal
+                return true;
+            } else {
+                return false;
+            }
+    }
+
+
+    public Reg_Users createCheck(Reg_UserRequestDTO request) {
+
+        if ((request.name() != null && !(request.name().isBlank()))
+                && (request.age() != null)
+                && (request.gender() != null)
+                && (request.profession() != null && !(request.profession().isBlank()))
+                && ((request.password() != null) && !(request.password().isBlank()))
+                && ((request.confPassword() != null) && !(request.confPassword().isBlank()))
+                && (request.email() != null && !(request.email().isBlank()))) {
+
+            if (confirmPswrd(request.password(), request.confPassword())) {
+
+                Reg_Users user = this.RequestToUser(request);
+
+                return user;
+
+            } else {
+                throw new RuntimeException("Fill all Fields (A field is empty)");
+            }
+
+
+        }
+        return null;
+    }
+
+
 //Checking if a request is empty before updating
 
-    public Reg_Users checkAndReturn(Reg_UserRequestDTO request, Reg_Users user){
+    public Reg_Users updateCheck(Reg_UserRequestDTO request, Reg_Users user){
 
         if(request.name() != null && !(request.name().isBlank())){
             user.setName(request.name());
@@ -98,7 +140,7 @@ public class Reg_UsersService {
         }
 
         if(request.profession() != null && !(request.profession().isBlank())){
-            user.setGender(request.gender());
+            user.setProfession(request.profession());
         }
 
         if(request.email() != null && !(request.email().isBlank())){

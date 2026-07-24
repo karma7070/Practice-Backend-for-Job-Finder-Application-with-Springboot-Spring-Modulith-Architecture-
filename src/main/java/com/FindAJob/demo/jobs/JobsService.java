@@ -158,8 +158,33 @@ public class JobsService {
        //////////////////////////////////////////////////////
 
 
-        public Jobs checkAndReturn(JobRequestDTO request, Jobs job){
+
+        public Jobs createCheck(JobRequestDTO request, Jobs job){
 //so check for empty JSON with .isBlank() and empty string with null
+        if((request.job_title() != null && !request.job_title().isBlank())
+                && (request.description() != null && !request.description().isBlank())
+                && (request.field() != null)
+                && (request.availability() != null)
+                && (request.posted_by() != null && !(request.posted_by().isBlank()))){
+            job.setJob_title(request.job_title());
+            job.setDescription(request.description());
+            job.setField(request.field());
+            job.setAvailability(request.availability());
+            job.setPosted_by(request.posted_by());
+
+        } else {
+            throw new RuntimeException("Fill all Fields (A field is empty)");
+        }
+
+        return job;
+
+    }
+
+    // ////////////////////update function here
+
+    public Jobs checkAndReturn(JobRequestDTO request, Jobs job){
+//so check for empty JSON with .isBlank() and empty string with null
+
         if(request.job_title() != null && !request.job_title().isBlank()){
             job.setJob_title(request.job_title());
         }
@@ -183,6 +208,8 @@ public class JobsService {
         return job;
 
     }
+
+
 //Returns Arraylist of users to the response
 
     public List<JobResponseDTO> getList(List<Jobs> jobs){

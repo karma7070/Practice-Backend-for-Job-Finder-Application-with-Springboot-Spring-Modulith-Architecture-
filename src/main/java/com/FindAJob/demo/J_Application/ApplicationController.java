@@ -25,5 +25,11 @@ public class ApplicationController {
     public List<ApplicationResDTO> getApns(){
         return service.getApn();
     }
+//company sets status i.e approves or denies or...
+
+    @PatchMapping(path = "/patch/{id}")
+    public ApplicationResDTO setStatus(@RequestBody AppStatusDTO appStatus, @PathVariable Long id){
+        return service.setStatus(appStatus, id);
+    }
 
 }
