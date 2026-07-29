@@ -1,6 +1,9 @@
 package com.FindAJob.demo.reg_users;
 
+import com.FindAJob.demo.reg_users.internal.Reg_UsersService;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping(path = "/app/users")
@@ -14,7 +17,13 @@ public class Reg_UserController {
 
     @PostMapping(path = "/create")
     public Reg_UserResponseDTO createUser(@RequestBody Reg_UserRequestDTO request){
+        System.out.println("Controller reached");
         return service.CreateUser(request);
+    }
+
+    @PostMapping(path = "/logIn")
+    public AuthResDTO userLogIn(@RequestBody AuthDTO auth){
+        return service.logIn(auth);
     }
 
     @PostMapping(path = "/update/{id}")

@@ -1,6 +1,7 @@
 package com.FindAJob.demo.companies;
 
 import com.FindAJob.demo.companies.internal.CompRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -9,22 +10,30 @@ import java.util.Optional;
 public class CompService {
 
     private final CompRepository serv_repository;
+    private final PasswordEncoder passWE;
 
 
-    public CompService(CompRepository serv_repository){
+    public CompService(CompRepository serv_repository, PasswordEncoder passWE){
         this.serv_repository = serv_repository;
+        this.passWE = passWE;
     }
 
     // ////ADD A COMPANY
 
-    public CompResponseDTO addCompany(CompRequestDTO request){
-        Companies company1 = this.RequestToComp(request);
+    public CompResponseDTO addCompany(CompRequestDTO request) {
 
-        serv_repository.save(company1);
+        if (createCheck(request)) {
 
-        CompResponseDTO resp1 = CompResponseDTO.from(company1);
+            Companies company1 = this.RequestToComp(request);
 
-        return resp1;
+            serv_repository.save(company1);
+
+            CompResponseDTO resp1 = CompResponseDTO.from(company1);
+
+            return resp1;
+        } else {
+            throw new RuntimeException("Fill all Fields");
+        }
     }
 
     //Update Company details
@@ -55,13 +64,31 @@ public class CompService {
                 ////////////////////////////
     /////////////  Service functions    /////////////////////////////////
                 ///////////////////////////
+//Checks for null request before creating user
+    public boolean createCheck(CompRequestDTO request){
+        if((request.comp_name() != null && !(request.comp_name().isBlank()))
+             && ((request.location() != null) && !(request.location().isBlank()))
+             && ((request.comp_email() != null) && !(request.comp_email().isBlank()))
+             && (request.role() != null)){
+
+            return true;
+
+        } else {
+            return false;
+        }
+    }
 
     //Converting requestDTO to company object
     public Companies RequestToComp(CompRequestDTO request){
+
+        String passW = passWE.encode(request.password());
+
         Companies comp1 = new Companies(
                 request.comp_name(),
                 request.location(),
-                request.comp_email()
+                request.comp_email(),
+                passW,
+                request.role()
         );
 
         return comp1;

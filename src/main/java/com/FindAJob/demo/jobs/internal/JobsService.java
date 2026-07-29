@@ -1,8 +1,8 @@
-package com.FindAJob.demo.jobs;
+package com.FindAJob.demo.jobs.internal;
 
 import com.FindAJob.demo.companies.CompService;
 import com.FindAJob.demo.companies.Companies;
-import com.FindAJob.demo.jobs.internal.JobsRepository;
+import com.FindAJob.demo.jobs.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
