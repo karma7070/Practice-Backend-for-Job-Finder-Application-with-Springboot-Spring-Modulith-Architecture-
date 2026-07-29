@@ -1,9 +1,15 @@
 package com.FindAJob.demo.reg_users;
 
+import com.FindAJob.demo.SecurityPackage.UserRoles;
 import jakarta.persistence.*;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import java.util.Collection;
+import java.util.List;
 
 @Entity
-public class Reg_Users {
+public class Reg_Users implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -14,19 +20,21 @@ public class Reg_Users {
     private String profession;
     private String email;
     private String password;
+    private UserRoles roles;
 
     public Reg_Users(String name,
                      Integer age,
                      Gen_Type gender,
                      String profession,
                      String email,
-                     String password){
+                     String password, UserRoles roles){
         this.name = name;
         this.age = age;
         this.gender = gender;
         this.profession = profession;
         this.email = email;
         this.password = password;
+        this.roles = roles;
     }
 
     public Reg_Users(){
@@ -83,6 +91,36 @@ public class Reg_Users {
 
     public String getPassword(){
         return password;
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of();
+    }
+
+    @Override
+    public String getUsername() {
+        return email;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
     }
 
 }

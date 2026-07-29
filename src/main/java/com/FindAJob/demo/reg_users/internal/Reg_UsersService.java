@@ -1,8 +1,14 @@
-package com.FindAJob.demo.reg_users;
+package com.FindAJob.demo.reg_users.internal;
 
 
-import com.FindAJob.demo.reg_users.internal.Reg_UsersRepository;
+import com.FindAJob.demo.reg_users.AuthDTO;
+import com.FindAJob.demo.SecurityPackage.JWTService;
+import com.FindAJob.demo.reg_users.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -11,17 +17,19 @@ import java.util.Optional;
 public class Reg_UsersService {
 
     private final Reg_UsersRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JWTService jwt;
 
-    public Reg_UsersService(Reg_UsersRepository userRepository){
+    public Reg_UsersService(Reg_UsersRepository userRepository, PasswordEncoder passwordEncoder, JWTService jwt){
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.jwt = jwt;
     }
 
 
 // ////ADD A USER
 
     public Reg_UserResponseDTO CreateUser(Reg_UserRequestDTO request){
-
-
 
         Reg_Users user1 = this.createCheck(request);
 
@@ -32,7 +40,25 @@ public class Reg_UsersService {
         return resp1;
     }
 
-//Update User details
+//User logs in
+    public AuthResDTO logIn(AuthDTO auth) {
+
+        Reg_Users user = userRepository.findByEmail(auth.email())
+                .orElseThrow(() -> new RuntimeException("User doesn't exist"));
+
+        //this encodes the entered password with same key and compares to the stored one
+        if (passwordEncoder.matches(auth.password(), user.getPassword())) {
+
+            String token = jwt.generateToken(user.getEmail());
+
+            return new AuthResDTO(jwt.extractEmail(token),
+                                 token);
+        } else {
+            throw new RuntimeException("Invalid Credentials");
+        }
+    }
+
+//Update User info
 
     public Reg_UserResponseDTO updateUser(Reg_UserRequestDTO request, Long id){
 
@@ -46,15 +72,18 @@ public class Reg_UsersService {
 
         return Reg_UserResponseDTO.from(user2);
     }
+//Delete user
 
     public Reg_UserResponseDTO deleteUser(Long id){
-        Optional<Reg_Users> user = userRepository.findById(id);
+       Reg_Users user = userRepository.findById(id)
+           .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found!"));
 
-        if(!(user.isEmpty())) {
-            userRepository.deleteById(id);
-        }
 
-        return null;
+        Reg_UserResponseDTO response = Reg_UserResponseDTO.from(user);
+
+        userRepository.deleteById(id);
+
+        return response;
     }
 
 
@@ -73,13 +102,17 @@ public class Reg_UsersService {
 
 //Converting requestDTO to company object
     public Reg_Users RequestToUser(Reg_UserRequestDTO request){
+
+        String passW = passwordEncoder.encode(request.password());
+
         Reg_Users user = new Reg_Users(
                 request.name(),
                 request.age(),
                 request.gender(),
                 request.profession(),
-                request.password(),
-                request.email()
+                request.email(),
+                passW,
+                request.role()
         );
 
         return user;
@@ -105,7 +138,8 @@ public class Reg_UsersService {
                 && (request.profession() != null && !(request.profession().isBlank()))
                 && ((request.password() != null) && !(request.password().isBlank()))
                 && ((request.confPassword() != null) && !(request.confPassword().isBlank()))
-                && (request.email() != null && !(request.email().isBlank()))) {
+                && (request.email() != null && !(request.email().isBlank()))
+                && (request.role() != null)) {
 
             if (confirmPswrd(request.password(), request.confPassword())) {
 
@@ -114,12 +148,13 @@ public class Reg_UsersService {
                 return user;
 
             } else {
-                throw new RuntimeException("Fill all Fields (A field is empty)");
+                throw new RuntimeException("Passwords don't match");
             }
 
 
+        } else {
+            throw new RuntimeException("Fill all fields!");
         }
-        return null;
     }
 
 
@@ -155,6 +190,17 @@ public class Reg_UsersService {
                 orElseThrow(() -> new RuntimeException("User not Found"));
     }
 
+    public Reg_Users getUserByEmail(String email){
+
+        Reg_Users user = userRepository.findByEmail(email)
+                .orElseThrow(()-> new RuntimeException("User not found"));
+
+        return user;
+    }
+
+
+
 }
+
 
 

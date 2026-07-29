@@ -1,5 +1,7 @@
 package com.FindAJob.demo.reg_users;
 
+import com.FindAJob.demo.SecurityPackage.UserRoles;
+
 public record Reg_UserRequestDTO(
         String name,
         Integer age,
@@ -7,6 +9,7 @@ public record Reg_UserRequestDTO(
         String profession,
         String password,
         String confPassword,
-        String email
+        String email,
+        UserRoles role
 ) {
 }

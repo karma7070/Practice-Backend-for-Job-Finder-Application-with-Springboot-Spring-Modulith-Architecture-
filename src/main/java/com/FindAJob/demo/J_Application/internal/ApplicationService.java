@@ -3,9 +3,9 @@ package com.FindAJob.demo.J_Application.internal;
 
 import com.FindAJob.demo.J_Application.*;
 import com.FindAJob.demo.jobs.Jobs;
-import com.FindAJob.demo.jobs.JobsService;
+import com.FindAJob.demo.jobs.internal.JobsService;
 import com.FindAJob.demo.reg_users.Reg_Users;
-import com.FindAJob.demo.reg_users.Reg_UsersService;
+import com.FindAJob.demo.reg_users.internal.Reg_UsersService;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 

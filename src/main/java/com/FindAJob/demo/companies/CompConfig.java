@@ -1,5 +1,6 @@
 package com.FindAJob.demo.companies;
 
+import com.FindAJob.demo.SecurityPackage.UserRoles;
 import com.FindAJob.demo.companies.internal.CompRepository;
 import org.jspecify.annotations.NonNull;
 import org.springframework.boot.CommandLineRunner;
@@ -24,37 +25,49 @@ public class CompConfig implements CommandLineRunner{
                 new Companies(
                         "Google",
                         "Mountain View, California",
-                        "careers@google.com"
+                        "careers@google.com",
+                        "njcalmlkds",
+                        UserRoles.Company
                 ),
 
                 new Companies(
                         "Microsoft",
                         "Redmond, Washington",
-                        "jobs@microsoft.com"
+                        "jobs@microsoft.com",
+                        "njcalmlkds",
+                        UserRoles.Company
                 ),
 
                 new Companies(
                         "Tesla",
                         "Austin, Texas",
-                        "recruitment@tesla.com"
+                        "recruitment@tesla.com",
+                        "njcalmlkds",
+                        UserRoles.Company
                 ),
 
                 new Companies(
                         "Deloitte",
                         "London, United Kingdom",
-                        "hr@deloitte.com"
+                        "hr@deloitte.com",
+                        "njcalmlkds",
+                        UserRoles.Company
                 ),
 
                 new Companies(
                         "Regional Hospital Buea",
                         "Buea, Cameroon",
-                        "careers@rhb.cm"
+                        "careers@rhb.cm",
+                        "njcalmlkds",
+                        UserRoles.Company
                 ),
 
                 new Companies(
                         "Care Services Ltd",
                         "Douala, Cameroon",
-                        "jobs@careservices.cm"
+                        "jobs@careservices.cm",
+                        "njcalmlkds",
+                        UserRoles.Company
                 )
 
         );

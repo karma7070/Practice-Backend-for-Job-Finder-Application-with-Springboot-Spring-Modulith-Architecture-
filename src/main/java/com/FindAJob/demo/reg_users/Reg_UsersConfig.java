@@ -3,7 +3,10 @@ package com.FindAJob.demo.reg_users;
 import com.FindAJob.demo.reg_users.internal.Reg_UsersRepository;
 import org.jspecify.annotations.NonNull;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.List;
 
@@ -15,6 +18,7 @@ public class Reg_UsersConfig implements CommandLineRunner {
     public Reg_UsersConfig(Reg_UsersRepository repository) {
         this.repository = repository;
     }
+
 
     @Override
     public void run(String @NonNull ... args) {
@@ -89,3 +93,4 @@ public class Reg_UsersConfig implements CommandLineRunner {
         }
     }
 }
+
