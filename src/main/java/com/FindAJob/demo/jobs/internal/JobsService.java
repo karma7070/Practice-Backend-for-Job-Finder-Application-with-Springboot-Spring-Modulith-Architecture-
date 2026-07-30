@@ -5,6 +5,7 @@ import com.FindAJob.demo.companies.Companies;
 import com.FindAJob.demo.jobs.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -59,7 +60,7 @@ public class JobsService {
          Companies comp = compservice.getCompId(request.compId());
 
             if(comp == null){
-                throw new RuntimeException("Company not Found");
+                throw new UsernameNotFoundException("Company not Found");
             }
 
                 Jobs job = new Jobs(
@@ -69,15 +70,17 @@ public class JobsService {
                         request.field(),
                         request.availability(),
                         request.posted_at(),
-                        request.posted_by() ,
+                        comp.getComp_name(),
                         comp
                 );
 
-                    job.setPosted_by(comp.getComp_name());
+                   // job.setPosted_by(comp.getComp_name());
 
                      repository.save(job);
 
-                        JobCreatedEvent event = new JobCreatedEvent(job.getId(), job.getJob_title(), comp.getComp_email());
+                        JobCreatedEvent event = new JobCreatedEvent(job.getId(),
+                                job.getJob_title(),
+                                comp.getCompEmail());
 
                         publisher.publishEvent(event);
 

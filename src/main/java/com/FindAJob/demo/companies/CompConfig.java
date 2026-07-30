@@ -5,6 +5,7 @@ import com.FindAJob.demo.companies.internal.CompRepository;
 import org.jspecify.annotations.NonNull;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
 
@@ -13,9 +14,11 @@ public class CompConfig implements CommandLineRunner{
 //CommandLineRunner is an interface that makes sure whatever is written inside runs at boot or is executed at boot
 
   private final CompRepository comprepo;
+  private final PasswordEncoder passWE;
 
-  public CompConfig(CompRepository comprepo){
+  public CompConfig(CompRepository comprepo, PasswordEncoder passWE){
     this.comprepo = comprepo;
+      this.passWE = passWE;
   }
 
   @Override
@@ -26,7 +29,7 @@ public class CompConfig implements CommandLineRunner{
                         "Google",
                         "Mountain View, California",
                         "careers@google.com",
-                        "njcalmlkds",
+                        passWE.encode("njcalmlkds"),
                         UserRoles.Company
                 ),
 
@@ -34,7 +37,7 @@ public class CompConfig implements CommandLineRunner{
                         "Microsoft",
                         "Redmond, Washington",
                         "jobs@microsoft.com",
-                        "njcalmlkds",
+                        passWE.encode("njcalmlkds"),
                         UserRoles.Company
                 ),
 
@@ -42,7 +45,7 @@ public class CompConfig implements CommandLineRunner{
                         "Tesla",
                         "Austin, Texas",
                         "recruitment@tesla.com",
-                        "njcalmlkds",
+                        passWE.encode("njcalmlkds"),
                         UserRoles.Company
                 ),
 
@@ -50,7 +53,7 @@ public class CompConfig implements CommandLineRunner{
                         "Deloitte",
                         "London, United Kingdom",
                         "hr@deloitte.com",
-                        "njcalmlkds",
+                        passWE.encode("njcalmlkds"),
                         UserRoles.Company
                 ),
 
@@ -58,7 +61,7 @@ public class CompConfig implements CommandLineRunner{
                         "Regional Hospital Buea",
                         "Buea, Cameroon",
                         "careers@rhb.cm",
-                        "njcalmlkds",
+                        passWE.encode("njcalmlkds"),
                         UserRoles.Company
                 ),
 
@@ -66,7 +69,7 @@ public class CompConfig implements CommandLineRunner{
                         "Care Services Ltd",
                         "Douala, Cameroon",
                         "jobs@careservices.cm",
-                        "njcalmlkds",
+                        passWE.encode("njcalmlkds"),
                         UserRoles.Company
                 )
 

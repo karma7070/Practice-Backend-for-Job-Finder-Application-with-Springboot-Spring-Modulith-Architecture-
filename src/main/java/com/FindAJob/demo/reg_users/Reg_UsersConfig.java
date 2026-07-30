@@ -1,5 +1,6 @@
 package com.FindAJob.demo.reg_users;
 
+import com.FindAJob.demo.SecurityPackage.UserRoles;
 import com.FindAJob.demo.reg_users.internal.Reg_UsersRepository;
 import org.jspecify.annotations.NonNull;
 import org.springframework.boot.CommandLineRunner;
@@ -14,9 +15,11 @@ import java.util.List;
 public class Reg_UsersConfig implements CommandLineRunner {
 
     private final Reg_UsersRepository repository;
+    private final PasswordEncoder passEn;
 
-    public Reg_UsersConfig(Reg_UsersRepository repository) {
+    public Reg_UsersConfig(Reg_UsersRepository repository, PasswordEncoder passEn) {
         this.repository = repository;
+        this.passEn = passEn;
     }
 
 
@@ -30,7 +33,8 @@ public class Reg_UsersConfig implements CommandLineRunner {
                             Gen_Type.FEMALE,
                             "Accountant",
                             "grace.wilson@example.com",
-                            "ebualnelkna"
+                            passEn.encode("ebualnelkna"),
+                            UserRoles.Reg_User
                     ),
 
                     new Reg_Users(
@@ -39,7 +43,8 @@ public class Reg_UsersConfig implements CommandLineRunner {
                             Gen_Type.MALE,
                             "Lawyer",
                             "daniel.smith@example.com",
-                            "ebualnelkna"
+                            passEn.encode("ebualnelkna"),
+                            UserRoles.Reg_User
                     ),
 
                     new Reg_Users(
@@ -48,7 +53,8 @@ public class Reg_UsersConfig implements CommandLineRunner {
                             Gen_Type.FEMALE,
                             "Nurse",
                             "emily.davis@example.com",
-                            "ebualnelkna"
+                            passEn.encode("ebualnelkna"),
+                            UserRoles.Reg_User
                     ),
 
                     new Reg_Users(
@@ -57,7 +63,8 @@ public class Reg_UsersConfig implements CommandLineRunner {
                             Gen_Type.MALE,
                             "Backend Developer",
                             "james.anderson@example.com",
-                            "ebualnelkna"
+                            passEn.encode("ebualnelkna"),
+                            UserRoles.Reg_User
                     ),
 
                     new Reg_Users(
@@ -66,7 +73,8 @@ public class Reg_UsersConfig implements CommandLineRunner {
                             Gen_Type.FEMALE,
                             "UI/UX Designer",
                             "sophia.taylor@example.com",
-                            "ebualnelkna"
+                            passEn.encode("ebualnelkna"),
+                            UserRoles.Reg_User
                     ),
 
                     new Reg_Users(
@@ -75,7 +83,8 @@ public class Reg_UsersConfig implements CommandLineRunner {
                             Gen_Type.MALE,
                             "Cybersecurity Analyst",
                             "david.williams@example.com",
-                            "ebualnelkna"
+                            passEn.encode("ebualnelkna"),
+                            UserRoles.Reg_User
                     ),
 
                     new Reg_Users(
@@ -84,7 +93,8 @@ public class Reg_UsersConfig implements CommandLineRunner {
                             Gen_Type.FEMALE,
                             "Data Scientist",
                             "olivia.martinez@example.com",
-                            "ebualnelkna"
+                            passEn.encode("ebualnelkna"),
+                            UserRoles.Reg_User
                     )
 
             );

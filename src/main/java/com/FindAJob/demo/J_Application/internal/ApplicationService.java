@@ -38,6 +38,34 @@ public class ApplicationService {
         return response;
     }
 
+    //get specific applications by email
+
+    public List<ApplicationResDTO> getApnByEmail(AppByEmailReqDTO email){
+
+      //  if(email.email() != auth.email)
+//finds applications based on user emails
+
+        List<Application> applications =
+                repository.findByUserEmail(email.email());
+
+        List<ApplicationResDTO> responses = new ArrayList<>();
+
+        if(applications != null){
+            for(int i = 0; i<applications.size(); i++){
+                Application appl = applications.get(i);
+                responses.add(ApplicationResDTO.from(appl));
+
+                return responses;
+            }
+
+        } else {
+
+            throw new RuntimeException("User has no applications");
+        }
+
+        return null;
+    }
+
     //create application
 
     public ApplicationResDTO createApn(ApplicationReqDTO request){
@@ -56,7 +84,9 @@ public class ApplicationService {
                                             
         repository.save(app1);
 
-        ApplicationMadeEvent event = new ApplicationMadeEvent(app1.getId(), app1.getUser().getId(), app1.getInfo());
+        ApplicationMadeEvent event = new ApplicationMadeEvent(app1.getId(),
+                                                                app1.getUser().getId(),
+                                                                app1.getInfo());
 
         publisher.publishEvent(event);
 
@@ -86,7 +116,10 @@ public class ApplicationService {
      return ApplicationResDTO.from(apn.get());
     }
 
+
+
     //update application
+
                      /////////////////////////////
 ///////////////////////// Service Functions  ///////////////////////////
                       //////////////////////////

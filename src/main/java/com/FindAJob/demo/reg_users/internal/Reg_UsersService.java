@@ -1,11 +1,12 @@
 package com.FindAJob.demo.reg_users.internal;
 
 
-import com.FindAJob.demo.reg_users.AuthDTO;
+import com.FindAJob.demo.SecurityPackage.AuthDTO;
+import com.FindAJob.demo.SecurityPackage.AuthResDTO;
 import com.FindAJob.demo.SecurityPackage.JWTService;
 import com.FindAJob.demo.reg_users.*;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -44,7 +45,7 @@ public class Reg_UsersService {
     public AuthResDTO logIn(AuthDTO auth) {
 
         Reg_Users user = userRepository.findByEmail(auth.email())
-                .orElseThrow(() -> new RuntimeException("User doesn't exist"));
+                .orElseThrow(() -> new UsernameNotFoundException("User doesn't exist"));
 
         //this encodes the entered password with same key and compares to the stored one
         if (passwordEncoder.matches(auth.password(), user.getPassword())) {
@@ -61,14 +62,17 @@ public class Reg_UsersService {
 //Update User info
 
     public Reg_UserResponseDTO updateUser(Reg_UserRequestDTO request, Long id){
+        //add empty request exception handler
 
         Optional<Reg_Users> opt_user1 = userRepository.findById(id);
 
         if(opt_user1.isEmpty()){
-            throw new RuntimeException("Company doesn't exist!!");
+            throw new UsernameNotFoundException("User doesn't exist!!");
         }
 
         Reg_Users user2 = this.updateCheck(request, opt_user1.get());
+
+        userRepository.save(user2);
 
         return Reg_UserResponseDTO.from(user2);
     }
@@ -190,12 +194,9 @@ public class Reg_UsersService {
                 orElseThrow(() -> new RuntimeException("User not Found"));
     }
 
-    public Reg_Users getUserByEmail(String email){
-
-        Reg_Users user = userRepository.findByEmail(email)
-                .orElseThrow(()-> new RuntimeException("User not found"));
-
-        return user;
+    public Optional<Reg_Users> getUserByEmail(String email){
+        return userRepository
+                .findByEmail(email);
     }
 
 

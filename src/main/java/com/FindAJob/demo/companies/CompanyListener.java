@@ -1,6 +1,7 @@
 package com.FindAJob.demo.companies;
 
 
+import com.FindAJob.demo.J_Application.ApplicationMadeEvent;
 import com.FindAJob.demo.jobs.JobCreatedEvent;
 import com.FindAJob.demo.jobs.JobDeletedEvent;
 import org.springframework.modulith.events.ApplicationModuleListener;
@@ -27,7 +28,12 @@ public class CompanyListener {
         System.out.println(id);
     }
 
- //   @ApplicationModuleListener
-   // public void on(ApplicationMadeEvent)
+    @ApplicationModuleListener
+    public void on(ApplicationMadeEvent event){
+        String info = event.info();
+
+        System.out.println(info);
+
+    }
 
 }

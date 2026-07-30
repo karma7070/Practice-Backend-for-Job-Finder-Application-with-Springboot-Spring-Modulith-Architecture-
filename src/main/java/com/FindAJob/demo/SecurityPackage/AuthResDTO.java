@@ -1,4 +1,4 @@
-package com.FindAJob.demo.reg_users;
+package com.FindAJob.demo.SecurityPackage;
 
 public record AuthResDTO(String email, String token) {
 }
