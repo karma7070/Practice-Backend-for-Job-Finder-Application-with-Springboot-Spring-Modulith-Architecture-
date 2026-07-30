@@ -1,9 +1,9 @@
 package com.FindAJob.demo.reg_users;
 
+import com.FindAJob.demo.SecurityPackage.AuthDTO;
+import com.FindAJob.demo.SecurityPackage.AuthResDTO;
 import com.FindAJob.demo.reg_users.internal.Reg_UsersService;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping(path = "/app/users")
@@ -26,7 +26,7 @@ public class Reg_UserController {
         return service.logIn(auth);
     }
 
-    @PostMapping(path = "/update/{id}")
+    @PatchMapping(path = "/update/{id}")
     public Reg_UserResponseDTO updateUser(@RequestBody Reg_UserRequestDTO request, @PathVariable Long id){
         return service.updateUser(request, id);
     }

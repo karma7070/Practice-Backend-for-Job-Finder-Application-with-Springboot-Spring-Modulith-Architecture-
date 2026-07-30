@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.jspecify.annotations.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -20,12 +21,14 @@ import java.io.IOException;
 public class AuthFilter extends OncePerRequestFilter {
 
     private final JWTService jwtSvc;
-    private final Reg_UsersRepository userRepo;
+    private final CustomerUserDetailsService userDetServ;
 
 
-    public AuthFilter(JWTService jwtSvc, Reg_UsersRepository userRepo) {
+    public AuthFilter(JWTService jwtSvc,
+                      CustomerUserDetailsService userDetServ) {
         this.jwtSvc = jwtSvc;
-        this.userRepo = userRepo;
+        this.userDetServ = userDetServ;
+
     }
 
 
@@ -34,6 +37,9 @@ public class AuthFilter extends OncePerRequestFilter {
                                     @NonNull HttpServletResponse response,
                                     @NonNull FilterChain filterChain)
             throws ServletException, IOException {
+
+        System.out.println("AuthFilter hit! Header = " + request.getHeader("Authorization"));
+
 if(SecurityContextHolder.getContext().getAuthentication() == null) {
 
 //HTTP request comes with a header which contains the string as seen below, now that string the variable 'authHeader'
@@ -68,12 +74,11 @@ if(SecurityContextHolder.getContext().getAuthentication() == null) {
 
             String email = jwtSvc.extractEmail(token);
 
-            Reg_Users user = userRepo.findByEmail(email)
-                    .orElseThrow(() -> new RuntimeException("User not found"));
-
+           UserDetails user = userDetServ.loadUserByUsername(email);
 
 //Gets the user and checks for its role and things it's allowed to do under said role
-            //Represents a logged in user
+            //Represents a logged-in user
+
             Authentication authentication =
                     new UsernamePasswordAuthenticationToken(
                             user,
@@ -81,12 +86,10 @@ if(SecurityContextHolder.getContext().getAuthentication() == null) {
                             user.getAuthorities()
                     );
 
-//Security context holder holds
+//Security context holder holds current authentication session (i.e user's credentials)
             SecurityContextHolder
                     .getContext()
                     .setAuthentication(authentication);
-
-            filterChain.doFilter(request, response);
 
         }
 

@@ -27,8 +27,8 @@ public class SecurityConfig {
 
 //initialization of filter with jwt service and userRepo
     @Bean
-    public AuthFilter authFilter(JWTService jwtSvc, Reg_UsersRepository userRepo) {
-        return new AuthFilter(jwtSvc, userRepo);
+    public AuthFilter authFilter(JWTService jwtSvc, CustomerUserDetailsService user) {
+        return new AuthFilter(jwtSvc, user);
     }
 
 //
@@ -65,17 +65,46 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http,
                                                    AuthFilter authFilter
                                                    ) throws Exception {
+    http
+
+        .addFilterBefore(
+            authFilter,
+            UsernamePasswordAuthenticationFilter.class
+        );
 
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/app/users/create", "/app/users/logIn").permitAll()
+
+                        //Permitted endpoints for all users
+                        .requestMatchers("/app/users/create",
+                                "/app/users/logIn",
+                                "/app/comp/create",
+                                "/app/comp/logIn",
+                                "/error").permitAll()
+
+                        //Authorized endpoints for reg_users
+                        .requestMatchers("/app/users/update/",
+                                "/app/users/delete/",
+                                "/app/jobs/all",
+                                "/app/jobs/one/",
+                                "/app/application/post").hasRole("Reg_User")
+
+                        //Authorized endpoints for companies
+                        .requestMatchers("/app/jobs/create",
+                                "/app/jobs/update",
+                                "/app/jobs/delete/",
+                                "/app/jobs/one/{id}",
+                                "/app/application/company_assesses/{id}").hasRole("Company")
+
+                        .requestMatchers("/app/application/view_applications")
+                        .hasAnyRole("Reg_User", "Company")
+
+
                         .anyRequest().authenticated()
-                )
-                .addFilterBefore(
-                        authFilter,
-                        UsernamePasswordAuthenticationFilter.class
+
                 );
+
 
         return http.build();
     }

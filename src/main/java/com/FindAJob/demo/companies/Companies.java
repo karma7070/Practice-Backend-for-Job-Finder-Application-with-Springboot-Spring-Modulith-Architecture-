@@ -1,31 +1,38 @@
 package com.FindAJob.demo.companies;
 
 import com.FindAJob.demo.SecurityPackage.UserRoles;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+import org.jspecify.annotations.NonNull;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import java.util.Collection;
+import java.util.List;
 
 @Entity
-public class Companies {
+public class Companies implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String comp_name;
     private String location;
-    private String comp_email;
+
+    @Column(name = "compemail")
+    private String compEmail;
+
     private String password;
     private UserRoles role;
 
     public Companies(String comp_name,
                      String location,
-                     String comp_email,
+                     String compEmail,
                      String password,
                      UserRoles role) {
         this.comp_name = comp_name;
         this.location = location;
-        this.comp_email = comp_email;
+        this.compEmail = compEmail;
         this.password = password;
         this.role = role;
     }
@@ -54,16 +61,27 @@ public class Companies {
         this.location = location;
     }
 
-    public String getComp_email() {
-        return comp_email;
+    public String getCompEmail() {
+        return compEmail;
     }
 
-    public void setComp_email(String comp_email) {
-        this.comp_email = comp_email;
+    public void setCompEmail(String compEmail) {
+        this.compEmail = compEmail;
+    }
+
+    @Override
+    public @NonNull  Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(new SimpleGrantedAuthority("ROLE_"
+                + this.role.name()));
     }
 
     public String getPassword() {
         return password;
+    }
+
+    @Override
+    public @NonNull String getUsername() {
+        return "";
     }
 
     public void setPassword(String password) {

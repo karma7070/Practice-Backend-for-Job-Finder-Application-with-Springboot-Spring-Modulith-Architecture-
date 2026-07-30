@@ -1,9 +1,16 @@
 package com.FindAJob.demo.companies;
 
+import com.FindAJob.demo.SecurityPackage.AuthDTO;
+import com.FindAJob.demo.SecurityPackage.JWTService;
 import com.FindAJob.demo.companies.internal.CompRepository;
+import com.FindAJob.demo.SecurityPackage.AuthResDTO;
+import com.FindAJob.demo.reg_users.Reg_Users;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -11,11 +18,13 @@ public class CompService {
 
     private final CompRepository serv_repository;
     private final PasswordEncoder passWE;
+    private final JWTService jwt;
 
 
-    public CompService(CompRepository serv_repository, PasswordEncoder passWE){
+    public CompService(CompRepository serv_repository, PasswordEncoder passWE, JWTService jwt){
         this.serv_repository = serv_repository;
         this.passWE = passWE;
+        this.jwt = jwt;
     }
 
     // ////ADD A COMPANY
@@ -33,6 +42,23 @@ public class CompService {
             return resp1;
         } else {
             throw new RuntimeException("Fill all Fields");
+        }
+    }
+//Company logs in
+    public AuthResDTO logIn(AuthDTO auth){
+        Companies company = serv_repository.findByCompEmail(auth.email())
+                .orElseThrow(()-> new UsernameNotFoundException("Company not found!"));
+
+        if(passWE.matches(auth.password(), company.getPassword())){
+
+            String token = jwt.generateToken(auth.email());
+
+            return new AuthResDTO(jwt.extractEmail(token),
+                    token);
+        } else {
+
+            throw new RuntimeException("Invalid Credentials");
+
         }
     }
 
@@ -69,7 +95,9 @@ public class CompService {
         if((request.comp_name() != null && !(request.comp_name().isBlank()))
              && ((request.location() != null) && !(request.location().isBlank()))
              && ((request.comp_email() != null) && !(request.comp_email().isBlank()))
-             && (request.role() != null)){
+             && ((request.password() != null) && !(request.password().isBlank()))
+                && ((request.confPass() != null) && !(request.confPass().isBlank()))
+                && (request.role() != null)){
 
             return true;
 
@@ -81,17 +109,24 @@ public class CompService {
     //Converting requestDTO to company object
     public Companies RequestToComp(CompRequestDTO request){
 
-        String passW = passWE.encode(request.password());
+        if(Objects.equals(request.confPass(), request.password())){
 
-        Companies comp1 = new Companies(
-                request.comp_name(),
-                request.location(),
-                request.comp_email(),
-                passW,
-                request.role()
-        );
+            String passW = passWE.encode(request.password());
 
-        return comp1;
+
+            Companies comp1 = new Companies(
+                    request.comp_name(),
+                    request.location(),
+                    request.comp_email(),
+                    passW,
+                    request.role()
+            );
+
+            return comp1;
+        } else {
+            throw new RuntimeException("Re-Enter Passwords!");
+        }
+
     }
 
     //Checking if a request is empty before updating
@@ -107,7 +142,7 @@ public class CompService {
         }
 
         if(request.comp_email() != null && !(request.comp_email().isBlank())){
-            company.setComp_email(request.comp_email());
+            company.setCompEmail(request.comp_email());
         }
 
         return company;
@@ -116,13 +151,21 @@ public class CompService {
     //Job uses this to get company
 
     public Companies getCompId(Long id){
-       Optional <Companies> comp = serv_repository.findById(id);
+       Optional <Companies> comp = Optional.of(serv_repository.findById(id)
+               .orElseThrow(()-> new UsernameNotFoundException("User does not exist")));
 
        if(comp.isPresent()) {
            return comp.get();
        } else
            return null;
     }
+
+    public Optional<Companies> getUserByEmail(String email){
+        return serv_repository.
+                findByCompEmail(email);
+    }
+
+
 
 }
 

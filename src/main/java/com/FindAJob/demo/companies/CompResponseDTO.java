@@ -8,7 +8,7 @@ public record CompResponseDTO(String comp_name,
         return new CompResponseDTO(
                 company.getComp_name(),
                 company.getLocation(),
-                company.getComp_email()
+                company.getCompEmail()
         );
 
     }
