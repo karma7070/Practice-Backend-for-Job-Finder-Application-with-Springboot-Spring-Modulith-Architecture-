@@ -2,6 +2,7 @@ package com.FindAJob.demo.companies;
 
 import com.FindAJob.demo.SecurityPackage.AuthDTO;
 import com.FindAJob.demo.SecurityPackage.AuthResDTO;
+import com.FindAJob.demo.companies.internal.CompService;
 import org.springframework.web.bind.annotation.*;
 
 @RestController

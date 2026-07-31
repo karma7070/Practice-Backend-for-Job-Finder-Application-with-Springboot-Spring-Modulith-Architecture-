@@ -10,6 +10,7 @@ public record ApplicationResDTO(
         AppStatus status
 ) {
     public static ApplicationResDTO from(Application app){
+
       ApplicationResDTO response = new ApplicationResDTO(
               app.getJob().getId(),
               app.getUser().getId(),

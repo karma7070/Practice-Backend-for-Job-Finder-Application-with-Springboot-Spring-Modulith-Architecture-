@@ -1,15 +1,18 @@
 package com.FindAJob.demo.jobs.internal;
 
-import com.FindAJob.demo.companies.CompService;
+import com.FindAJob.demo.companies.internal.CompService;
 import com.FindAJob.demo.companies.Companies;
 import com.FindAJob.demo.jobs.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -40,6 +43,55 @@ public class JobsService {
      return responses;
     }
 
+//Return jobs by specific company
+
+    public List<JobResponseDTO> getJobsByCompany() {
+
+        String err = Objects.requireNonNull
+                        (SecurityContextHolder
+                                .getContext()
+                                .getAuthentication())
+                .getName() + "No homo";
+
+        Optional<Companies> comp = compservice.getUserByEmail
+                (Objects.requireNonNull
+                        (SecurityContextHolder
+                        .getContext()
+                        .getAuthentication())
+                .getName());
+
+
+        if(comp.isPresent()){
+             Companies comp2 = comp.get();
+         } else{
+
+             throw new UsernameNotFoundException("Company not found" + err);
+         }
+
+            List<Jobs> job =
+                    repository.findByCompany_id(comp.get().getId());
+
+            if (!(job.isEmpty())) {
+
+                ArrayList<JobResponseDTO> responses = new ArrayList<>();
+
+                for (int i = 0; i < job.size(); i++) {
+
+                    Jobs job_n = job.get(i);
+
+                    responses.add(JobResponseDTO.from(job_n));
+                }
+
+                return responses;
+
+            } else {
+
+                throw new UsernameNotFoundException("No jobs created yet");
+
+            }
+
+    }
+
 // Get job by Id
     public JobResponseDTO getAJob(Long id) {
 
@@ -57,7 +109,7 @@ public class JobsService {
 
     public JobResponseDTO addJob(JobRequestDTO request){
 
-         Companies comp = compservice.getCompId(request.compId());
+         Companies comp = compservice.getCompById(request.compId());
 
             if(comp == null){
                 throw new UsernameNotFoundException("Company not Found");
@@ -69,7 +121,7 @@ public class JobsService {
                         request.salary(),
                         request.field(),
                         request.availability(),
-                        request.posted_at(),
+                        Instant.now(),
                         comp.getComp_name(),
                         comp
                 );
@@ -167,13 +219,11 @@ public class JobsService {
         if((request.job_title() != null && !request.job_title().isBlank())
                 && (request.description() != null && !request.description().isBlank())
                 && (request.field() != null)
-                && (request.availability() != null)
-                && (request.posted_by() != null && !(request.posted_by().isBlank()))){
+                && (request.availability() != null)){
             job.setJob_title(request.job_title());
             job.setDescription(request.description());
             job.setField(request.field());
             job.setAvailability(request.availability());
-            job.setPosted_by(request.posted_by());
 
         } else {
             throw new RuntimeException("Fill all Fields (A field is empty)");
@@ -202,10 +252,6 @@ public class JobsService {
 
         if(request.availability() != null){
             job.setAvailability(request.availability());
-        }
-
-        if(request.posted_by() != null && !(request.posted_by().isBlank())){
-            job.setPosted_by(request.posted_by());
         }
 
         return job;
