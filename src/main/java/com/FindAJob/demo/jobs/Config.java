@@ -1,6 +1,6 @@
 package com.FindAJob.demo.jobs;
 
-import com.FindAJob.demo.companies.CompService;
+import com.FindAJob.demo.companies.internal.CompService;
 import com.FindAJob.demo.companies.Companies;
 import com.FindAJob.demo.jobs.internal.JobsRepository;
 import org.jspecify.annotations.NonNull;
@@ -27,7 +27,7 @@ public class Config implements CommandLineRunner {
     public void run(String @NonNull ... args) throws Exception {
         if(repository.count() == 0){
 
-            Optional<Companies> comp = Optional.ofNullable(compserv.getCompId(1L));
+            Optional<Companies> comp = Optional.ofNullable(compserv.getCompById(1L));
 
                 List<Jobs> jobs = List.of(
                         //this is how u enter elements into an array, either this oe for loops

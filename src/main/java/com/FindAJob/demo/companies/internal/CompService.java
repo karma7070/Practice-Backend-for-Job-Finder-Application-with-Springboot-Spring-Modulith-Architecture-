@@ -1,14 +1,14 @@
-package com.FindAJob.demo.companies;
+package com.FindAJob.demo.companies.internal;
 
 import com.FindAJob.demo.SecurityPackage.AuthDTO;
 import com.FindAJob.demo.SecurityPackage.JWTService;
-import com.FindAJob.demo.companies.internal.CompRepository;
+import com.FindAJob.demo.companies.CompRequestDTO;
+import com.FindAJob.demo.companies.CompResponseDTO;
+import com.FindAJob.demo.companies.Companies;
 import com.FindAJob.demo.SecurityPackage.AuthResDTO;
-import com.FindAJob.demo.reg_users.Reg_Users;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -150,7 +150,7 @@ public class CompService {
 
     //Job uses this to get company
 
-    public Companies getCompId(Long id){
+    public Companies getCompById(Long id){
        Optional <Companies> comp = Optional.of(serv_repository.findById(id)
                .orElseThrow(()-> new UsernameNotFoundException("User does not exist")));
 
@@ -164,8 +164,6 @@ public class CompService {
         return serv_repository.
                 findByCompEmail(email);
     }
-
-
 
 }
 

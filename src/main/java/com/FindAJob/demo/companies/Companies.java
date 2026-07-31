@@ -81,7 +81,7 @@ public class Companies implements UserDetails {
 
     @Override
     public @NonNull String getUsername() {
-        return "";
+        return this.compEmail;
     }
 
     public void setPassword(String password) {

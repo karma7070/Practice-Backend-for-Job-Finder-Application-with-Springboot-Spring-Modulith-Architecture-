@@ -2,16 +2,21 @@ package com.FindAJob.demo.J_Application.internal;
 
 
 import com.FindAJob.demo.J_Application.*;
+import com.FindAJob.demo.companies.Companies;
 import com.FindAJob.demo.jobs.Jobs;
 import com.FindAJob.demo.jobs.internal.JobsService;
 import com.FindAJob.demo.reg_users.Reg_Users;
 import com.FindAJob.demo.reg_users.internal.Reg_UsersService;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.io.InvalidClassException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -29,7 +34,8 @@ public class ApplicationService {
         this.publisher = publisher;
     }
 
-    //get applications
+    //get applications for ADMIN
+
     public List<ApplicationResDTO> getApn(){
         List<Application> apns = repository.findAll();
 
@@ -38,35 +44,44 @@ public class ApplicationService {
         return response;
     }
 
-    //get specific applications by email
 
-    public List<ApplicationResDTO> getApnByEmail(AppByEmailReqDTO email){
 
-      //  if(email.email() != auth.email)
+//get specific applications by email for USERS
+
+    public List<ApplicationResDTO> getApnByEmail(){
+
+        //  if(email.email() != auth.email)
 //finds applications based on user emails
 
+        String email = Objects.requireNonNull(SecurityContextHolder
+                        .getContext()
+                        .getAuthentication())
+                .getName();
+
         List<Application> applications =
-                repository.findByUserEmail(email.email());
+                repository.findByUserEmail(email);
 
         List<ApplicationResDTO> responses = new ArrayList<>();
 
-        if(applications != null){
+        if(!(applications.isEmpty())){
+
             for(int i = 0; i<applications.size(); i++){
+
                 Application appl = applications.get(i);
+
                 responses.add(ApplicationResDTO.from(appl));
 
-                return responses;
             }
+            return responses;
 
         } else {
 
-            throw new RuntimeException("User has no applications");
+            throw new UsernameNotFoundException("User has no applications");
         }
 
-        return null;
     }
 
-    //create application
+//create application for USERS
 
     public ApplicationResDTO createApn(ApplicationReqDTO request){
 
@@ -95,10 +110,49 @@ public class ApplicationService {
         return response;
     }
 
-//Company approves application
+//Company gets applications (for Companies)
+
+    public List<ApplicationResDTO> getByCompany(){
+
+        List<Application> appns = repository.findAll();
+
+        String email = Objects.requireNonNull(SecurityContextHolder
+                        .getContext()
+                        .getAuthentication())
+                .getName();
+
+       ArrayList <ApplicationResDTO> responseArray = new ArrayList<>();
+
+        for(int i = 0; i<appns.size(); i++){
+
+            Application app = appns.get(i);
+
+            if(Objects.equals(app.getJob().getCompany().getCompEmail(), email)){
+
+                responseArray.add(ApplicationResDTO.from(app));
+
+            } else {
+                throw new UsernameNotFoundException("Email doesn't match");
+            }
+
+        }
+        if(!(responseArray.isEmpty())){
+
+            return responseArray;
+
+        } else{
+
+            throw new UsernameNotFoundException("No user applied yet");
+        }
+
+    }
+
+//Company approves/denies application (for Companies)
+
     public ApplicationResDTO setStatus(AppStatusDTO appStatus, Long id){
 
         Optional<Application> apn = repository.findById(id);
+
         if(apn.isEmpty()){
             throw new RuntimeException("Application doesn't exist");
         }

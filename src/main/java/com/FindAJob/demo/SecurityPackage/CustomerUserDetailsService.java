@@ -1,7 +1,7 @@
 package com.FindAJob.demo.SecurityPackage;
 
 
-import com.FindAJob.demo.companies.CompService;
+import com.FindAJob.demo.companies.internal.CompService;
 import com.FindAJob.demo.companies.Companies;
 import com.FindAJob.demo.reg_users.Reg_Users;
 import com.FindAJob.demo.reg_users.internal.Reg_UsersService;
