@@ -51,10 +51,13 @@ public class CompService {
 
         if(passWE.matches(auth.password(), company.getPassword())){
 
-            String token = jwt.generateToken(auth.email());
+            String token = jwt.generateToken(company.getCompEmail(),
+                                                company.getComp_name(),
+                                                company.getRole());
 
-            return new AuthResDTO(jwt.extractEmail(token),
-                    token);
+            return new AuthResDTO(jwt.extractUsername(token),
+                                    jwt.extractEmail(token),
+                                     token);
         } else {
 
             throw new RuntimeException("Invalid Credentials");

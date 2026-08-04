@@ -23,6 +23,7 @@ public class Reg_UserController {
 
     @PostMapping(path = "/logIn")
     public AuthResDTO userLogIn(@RequestBody AuthDTO auth){
+
         return service.logIn(auth);
     }
 

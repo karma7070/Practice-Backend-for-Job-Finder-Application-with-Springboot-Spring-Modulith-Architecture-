@@ -1,6 +1,5 @@
 package com.FindAJob.demo.SecurityPackage;
 
-import com.FindAJob.demo.reg_users.internal.Reg_UsersRepository;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,7 +26,7 @@ public class SecurityConfig {
 
 //initialization of filter with jwt service and userRepo
     @Bean
-    public AuthFilter authFilter(JWTService jwtSvc, CustomerUserDetailsService user) {
+    public AuthFilter authFilter(JWTService jwtSvc, CustomUserDetailsService user) {
         return new AuthFilter(jwtSvc, user);
     }
 
@@ -35,7 +34,7 @@ public class SecurityConfig {
     @Bean
     public FilterRegistrationBean<AuthFilter> authFilterRegistration(AuthFilter filter) {
         FilterRegistrationBean<AuthFilter> registrationBean = new FilterRegistrationBean<>(filter);
-        registrationBean.setEnabled(false);
+        registrationBean.setEnabled(false);//this way springboot doesn't attempt to automatically initialize it creating a conflict
         return registrationBean;
     }
 
@@ -44,7 +43,7 @@ public class SecurityConfig {
 // direct requests to other functions that can communicate with the DB
 
     @Bean
-    public AuthenticationProvider authProvider(CustomerUserDetailsService userDetServ,
+    public AuthenticationProvider authProvider(CustomUserDetailsService userDetServ,
                                                PasswordEncoder encoder){
 
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetServ);

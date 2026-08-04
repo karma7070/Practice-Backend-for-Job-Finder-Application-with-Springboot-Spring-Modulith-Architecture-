@@ -20,9 +20,13 @@ public class JWTService {
 
     //creates JWT from email after log in
 
-    public String generateToken(String email){
+    public String generateToken(String email,
+                                String name,
+                                UserRoles role){
         return Jwts.builder()//starts the creation of the jwt
                 .subject(email) //uses email to create token for user to identify user
+                .claim("name", name)
+                .claim("role", role)
                 .issuedAt(new Date()) //time of creation
                 .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60)) //time of expiration
                 .signWith(this.getKey())//signs token so it can't be tampered with
@@ -40,6 +44,24 @@ public class JWTService {
                 .parseSignedClaims(token)//parses JWT i.e converts it back
                 .getPayload()// gets the data in the JWT i.e payload
                 .getSubject(); //returns email
+    }
+
+    public String extractUsername(String token){
+        return Jwts.parser()
+                .verifyWith(getKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .get("name", String.class);
+    }
+
+    public String extractRole(String token){
+       return Jwts.parser()
+               .verifyWith(getKey())
+               .build()
+               .parseSignedClaims(token)
+               .getPayload()
+               .get("role", String.class);
     }
 
 

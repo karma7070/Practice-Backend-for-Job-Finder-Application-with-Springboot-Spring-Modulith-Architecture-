@@ -47,18 +47,15 @@ public class JobsService {
 
     public List<JobResponseDTO> getJobsByCompany() {
 
-        String err = Objects.requireNonNull
-                        (SecurityContextHolder
-                                .getContext()
-                                .getAuthentication())
-                .getName() + "No homo";
+        String err = " No homo";
 
         Optional<Companies> comp = compservice.getUserByEmail
                 (Objects.requireNonNull
-                        (SecurityContextHolder
-                        .getContext()
-                        .getAuthentication())
-                .getName());
+                                (Objects.requireNonNull(Objects.requireNonNull(SecurityContextHolder
+                                                        .getContext()
+                                                        .getAuthentication())
+                                                         .getPrincipal())
+                                                            .toString()));
 
 
         if(comp.isPresent()){
