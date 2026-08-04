@@ -1,14 +1,17 @@
 package com.FindAJob.demo.SecurityPackage;
 
+import com.FindAJob.demo.companies.Companies;
+import com.FindAJob.demo.refreshtoken.internal.RefreshService;
 import com.FindAJob.demo.reg_users.Reg_Users;
-import com.FindAJob.demo.reg_users.internal.Reg_UsersRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -16,20 +19,24 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Objects;
 
 @Component
+@Slf4j
 public class AuthFilter extends OncePerRequestFilter {
 
     private final JWTService jwtSvc;
-    private final CustomerUserDetailsService userDetServ;
+    private final CustomUserDetailsService userDetServ;
+    private static String compTok;
 
 
     public AuthFilter(JWTService jwtSvc,
-                      CustomerUserDetailsService userDetServ) {
+                      CustomUserDetailsService userDetServ) {
         this.jwtSvc = jwtSvc;
         this.userDetServ = userDetServ;
-
     }
+
 
 
     @Override
@@ -40,14 +47,12 @@ public class AuthFilter extends OncePerRequestFilter {
 
         System.out.println("AuthFilter hit! Header = " + request.getHeader("Authorization"));
 
-if(SecurityContextHolder.getContext().getAuthentication() == null) {
+        if (SecurityContextHolder.getContext().getAuthentication() == null) {
 
 //HTTP request comes with a header which contains the string as seen below, now that string the variable 'authHeader'
-
             String authHeader = request.getHeader("Authorization");
 
 //checks if authHeader is null or doesn't start with bearer meaning no token
-
             if (authHeader == null
                     || !(authHeader.startsWith("Bearer "))) {
 
@@ -59,42 +64,39 @@ if(SecurityContextHolder.getContext().getAuthentication() == null) {
 //token removed from string by creating a substring
 // from the 7th element in the string to the end, i.e "Bearer kwpmpidjpokklm",
 //is in the 7th slot so a new string is created from that 7th element
-
             String token = authHeader.substring(7);
 
-//the method for checking token validity is called in an if statement since it returns
-// boolean and if token is invalid the response below is sent (401 for unauthorized)
+                if (!jwtSvc.isTokenValid(token)) {
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.getWriter().write("Invalid or Expired Token");
+                    return;
+                }
 
-            if (!jwtSvc.isTokenValid(token)) {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write("Invalid or Expired Token");
-                return;
-            }
-//Email is extracted using the extractEmail method from the JWTService file
+                    String email = jwtSvc.extractEmail(token);
 
-            String email = jwtSvc.extractEmail(token);
+                    String name = jwtSvc.extractUsername(token);
 
-           UserDetails user = userDetServ.loadUserByUsername(email);
+                    String role = jwtSvc.extractRole(token);
 
 //Gets the user and checks for its role and things it's allowed to do under said role
-            //Represents a logged-in user
-
-            Authentication authentication =
-                    new UsernamePasswordAuthenticationToken(
-                            user,
-                            null,
-                            user.getAuthorities()
-                    );
+                //Represents a logged-in user
+                Authentication authentication =
+                        new UsernamePasswordAuthenticationToken(
+                                email,
+                                null,
+                                List.of(new SimpleGrantedAuthority("ROLE_" + role))
+                        );
 
 //Security context holder holds current authentication session (i.e user's credentials)
-            SecurityContextHolder
-                    .getContext()
-                    .setAuthentication(authentication);
+                SecurityContextHolder
+                        .getContext()
+                        .setAuthentication(authentication);
 
+                filterChain.doFilter(request, response);
+
+            }
         }
-
-        filterChain.doFilter(request, response);
 
     }
 
-}
+

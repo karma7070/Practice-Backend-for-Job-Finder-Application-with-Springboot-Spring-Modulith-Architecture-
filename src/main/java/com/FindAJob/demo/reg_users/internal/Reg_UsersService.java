@@ -4,6 +4,9 @@ package com.FindAJob.demo.reg_users.internal;
 import com.FindAJob.demo.SecurityPackage.AuthDTO;
 import com.FindAJob.demo.SecurityPackage.AuthResDTO;
 import com.FindAJob.demo.SecurityPackage.JWTService;
+import com.FindAJob.demo.refreshtoken.RefreshToken;
+import com.FindAJob.demo.refreshtoken.internal.RefreshRepository;
+import com.FindAJob.demo.refreshtoken.internal.RefreshService;
 import com.FindAJob.demo.reg_users.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -11,6 +14,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -20,11 +25,18 @@ public class Reg_UsersService {
     private final Reg_UsersRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JWTService jwt;
+    private final RefreshService refTServ;
+    private final RefreshRepository refRepo;
 
-    public Reg_UsersService(Reg_UsersRepository userRepository, PasswordEncoder passwordEncoder, JWTService jwt){
+    public Reg_UsersService(Reg_UsersRepository userRepository,
+                            PasswordEncoder passwordEncoder,
+                            JWTService jwt,
+                            RefreshService refTServ, RefreshRepository refRepo){
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwt = jwt;
+        this.refTServ = refTServ;
+        this.refRepo = refRepo;
     }
 
 
@@ -50,10 +62,22 @@ public class Reg_UsersService {
         //this encodes the entered password with same key and compares to the stored one
         if (passwordEncoder.matches(auth.password(), user.getPassword())) {
 
-            String token = jwt.generateToken(user.getEmail());
+            String token = jwt.generateToken(user.getEmail(),
+                                                user.getName(),
+                                                user.getRole());
 
-            return new AuthResDTO(jwt.extractEmail(token),
-                                 token);
+            long num = this.checkUserTokens(auth.email());
+
+            if(num != 1) {
+                refRepo.deleteAllByUserEmail(auth.email());
+                 refTServ.createRefreshT(auth.email());
+            } else{
+                 refTServ.createRefreshT(auth.email());
+            }
+
+            return new AuthResDTO(user.getUsername(),
+                    jwt.extractEmail(token),
+                    token);
         } else {
             throw new RuntimeException("Invalid Credentials");
         }
@@ -199,7 +223,24 @@ public class Reg_UsersService {
                 .findByEmail(email);
     }
 
+//Count number of tokens user has
 
+    public Long checkUserTokens(String email) {
+        Reg_Users user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User does not exist"));
+
+        List<RefreshToken> refTokens = refRepo.findAllByUserEmail(email);
+
+        long num = 0L;
+
+        for (int i = 0; i < refTokens.size(); i++) {
+            if (refTokens.get(i) != null) {
+                num += 1;
+            }
+        }
+
+        return num;
+    }
 
 }
 

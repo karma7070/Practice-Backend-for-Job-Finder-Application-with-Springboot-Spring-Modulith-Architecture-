@@ -95,6 +95,10 @@ public class Reg_Users implements UserDetails {
         return password;
     }
 
+    public UserRoles getRole(){
+        return roles;
+    }
+
     @Override
     public @NonNull Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_"
@@ -103,6 +107,7 @@ public class Reg_Users implements UserDetails {
 
     @Override
     public @NonNull String getUsername() {
+
         return email;
     }
 

@@ -6,6 +6,7 @@ import com.FindAJob.demo.companies.Companies;
 import com.FindAJob.demo.reg_users.Reg_Users;
 import com.FindAJob.demo.reg_users.internal.Reg_UsersService;
 import org.jspecify.annotations.NonNull;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -14,15 +15,19 @@ import org.springframework.stereotype.Service;
 import java.util.Optional;
 
 @Service
-public class CustomerUserDetailsService implements UserDetailsService {
+public class CustomUserDetailsService implements UserDetailsService {
 
     private final Reg_UsersService userSrv;
     private final CompService compSrv;
+    private static UserDetails user_n;
 
 
-    public CustomerUserDetailsService(Reg_UsersService userSrv, CompService compSrv) {
+    @Autowired
+    public CustomUserDetailsService(Reg_UsersService userSrv,
+                                    CompService compSrv) {
         this.userSrv = userSrv;
         this.compSrv = compSrv;
+
     }
 
 
@@ -30,19 +35,26 @@ public class CustomerUserDetailsService implements UserDetailsService {
     public @NonNull UserDetails loadUserByUsername(@NonNull String username)
             throws UsernameNotFoundException {
 
-         Optional<Reg_Users> user =
-                 userSrv.getUserByEmail(username);
-         if(user.isPresent()){
-             return user.get();
-         }
+            Optional<Reg_Users> user =
+                    userSrv.getUserByEmail(username);
+            if (user.isPresent()) {
+                user_n = user.get();
+                return user.get();
+            }
 
-         Optional<Companies> company =
-                 compSrv.getUserByEmail(username);
-         if(company.isPresent()){
-             return company.get();
-         }
+            Optional<Companies> company =
+                    compSrv.getUserByEmail(username);
+            if (company.isPresent()) {
+                user_n = company.get();
+                return company.get();
+            }
 
-         throw new UsernameNotFoundException("No account exists with this email!");
+            throw new UsernameNotFoundException("No account exists with this email!");
 
     }
+
+    public UserDetails setUser(){
+        return user_n;
+    }
+
 }
