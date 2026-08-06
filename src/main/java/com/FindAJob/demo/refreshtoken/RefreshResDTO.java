@@ -1,12 +1,21 @@
 package com.FindAJob.demo.refreshtoken;
 
-public record RefreshResDTO(String token) {
+import com.FindAJob.demo.reg_users.Reg_Users;
 
-    public static RefreshResDTO from(RefreshToken refreshT){
+public record RefreshResDTO(String email,
+                            String token,
+                            String refToken
+
+) {
+/*
+    public static RefreshResDTO from(RefreshToken refreshT, Reg_Users user){
         return new RefreshResDTO(
+                user.getEmail(),
+                token,
                 refreshT.getToken()
+
         );
 
     }
-
+*/
 }

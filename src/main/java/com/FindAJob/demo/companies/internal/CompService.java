@@ -6,10 +6,14 @@ import com.FindAJob.demo.companies.CompRequestDTO;
 import com.FindAJob.demo.companies.CompResponseDTO;
 import com.FindAJob.demo.companies.Companies;
 import com.FindAJob.demo.SecurityPackage.AuthResDTO;
+import com.FindAJob.demo.refreshtoken.RefreshToken;
+import com.FindAJob.demo.refreshtoken.internal.RefreshRepository;
+import com.FindAJob.demo.refreshtoken.internal.RefreshService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -19,12 +23,19 @@ public class CompService {
     private final CompRepository serv_repository;
     private final PasswordEncoder passWE;
     private final JWTService jwt;
+    private final RefreshService rTokenSv;
+    private final RefreshRepository refRepo;
 
 
-    public CompService(CompRepository serv_repository, PasswordEncoder passWE, JWTService jwt){
+    public CompService(CompRepository serv_repository,
+                       PasswordEncoder passWE,
+                       JWTService jwt,
+                       RefreshService rTokenSv, RefreshRepository refRepo){
         this.serv_repository = serv_repository;
         this.passWE = passWE;
         this.jwt = jwt;
+        this.rTokenSv = rTokenSv;
+        this.refRepo = refRepo;
     }
 
     // ////ADD A COMPANY
@@ -33,36 +44,45 @@ public class CompService {
 
         if (createCheck(request)) {
 
-            Companies company1 = this.RequestToComp(request);
+                Companies company1 = this.RequestToComp(request);
 
-            serv_repository.save(company1);
+                    serv_repository.save(company1);
 
-            CompResponseDTO resp1 = CompResponseDTO.from(company1);
+                CompResponseDTO resp1 = CompResponseDTO.from(company1);
 
-            return resp1;
+                    return resp1;
         } else {
             throw new RuntimeException("Fill all Fields");
         }
     }
 //Company logs in
     public AuthResDTO logIn(AuthDTO auth){
+
         Companies company = serv_repository.findByCompEmail(auth.email())
                 .orElseThrow(()-> new UsernameNotFoundException("Company not found!"));
 
-        if(passWE.matches(auth.password(), company.getPassword())){
+        Optional<RefreshToken> refreshToken = refRepo.findByUserEmail(auth.email());
 
-            String token = jwt.generateToken(company.getCompEmail(),
-                                                company.getComp_name(),
-                                                company.getRole());
+            long num = checkUserTokens(auth.email());
 
-            return new AuthResDTO(jwt.extractUsername(token),
-                                    jwt.extractEmail(token),
-                                     token);
-        } else {
+                if (passWE.matches(auth.password(), company.getPassword())) {
 
-            throw new RuntimeException("Invalid Credentials");
+                    String token = jwt.generateToken(company.getCompEmail(),
+                            company.getComp_name(),
+                            company.getRole());
 
-        }
+                    String refToken = rTokenSv.checkForExistingCompRefToken(company);
+
+                    return new AuthResDTO(jwt.extractUsername(token),
+                            jwt.extractEmail(token),
+                            ("Access Token|" + token +
+                                    "| RefreshToken |" + refToken));
+                } else {
+
+                    throw new RuntimeException("Invalid Credentials");
+
+                }
+
     }
 
     //Update Company details
@@ -70,15 +90,15 @@ public class CompService {
     public CompResponseDTO updateCompany(CompRequestDTO request, Long id){
         Optional<Companies> opt_comp1 = serv_repository.findById(id);
 
-        if(opt_comp1.isEmpty()){
-            throw new RuntimeException("Company doesn't exist!!");
-        }
+            if(opt_comp1.isEmpty()){
+                throw new RuntimeException("Company doesn't exist!!");
+            }
 
-        Companies comp2 = this.checkAndReturn(request, opt_comp1.get());
+                Companies comp2 = this.checkAndReturn(request, opt_comp1.get());
 
-        serv_repository.save(comp2);
+                   serv_repository.save(comp2);
 
-        return CompResponseDTO.from(comp2);
+                      return CompResponseDTO.from(comp2);
     }
 
 
@@ -166,6 +186,24 @@ public class CompService {
     public Optional<Companies> getUserByEmail(String email){
         return serv_repository.
                 findByCompEmail(email);
+    }
+
+
+//Count number of tokens user has
+
+    public Long checkUserTokens(String email) {
+
+        List<RefreshToken> refTokens = refRepo.findAllByUserEmail(email);
+
+        long num = 0L;
+
+        for (int i = 0; i < refTokens.size(); i++) {
+            if (refTokens.get(i) != null) {
+                num += 1;
+            }
+        }
+
+        return num;
     }
 
 }
