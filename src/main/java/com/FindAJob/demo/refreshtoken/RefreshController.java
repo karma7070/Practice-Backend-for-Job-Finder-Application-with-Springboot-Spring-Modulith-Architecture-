@@ -3,10 +3,7 @@ package com.FindAJob.demo.refreshtoken;
 import com.FindAJob.demo.SecurityPackage.AuthDTO;
 import com.FindAJob.demo.SecurityPackage.AuthResDTO;
 import com.FindAJob.demo.refreshtoken.internal.RefreshService;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping(path = "/app/refresh")
@@ -16,14 +13,19 @@ public class RefreshController {
 
 
     public RefreshController(RefreshService servRef) {
+
         this.servRef = servRef;
     }
 
-    @PostMapping(path = "/refAcc")
-    public AuthResDTO refreshAccessToken(@RequestBody AuthDTO auth){
+    @PostMapping(path = "/userrefAcc")
+    public RefreshResDTO refreshAccessToken(@RequestBody RefreshReqDTO req){
 
-      return  servRef.refreshAccessToken(auth.email());
+      return  servRef.refreshAccessToken(req);
 
     }
 
+    @PostMapping(path = "/comprefAcc")
+    public RefreshResDTO refreshCompAccessToken(@RequestBody RefreshReqDTO req){
+        return servRef.refreshCompAccToken(req);
+    }
 }

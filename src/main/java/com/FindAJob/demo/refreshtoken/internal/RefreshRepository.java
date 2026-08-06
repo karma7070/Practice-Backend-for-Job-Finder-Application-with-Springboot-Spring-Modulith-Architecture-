@@ -13,7 +13,11 @@ public interface RefreshRepository extends JpaRepository<RefreshToken, Long> {
 
     Optional<RefreshToken> findByUserEmail(String email);
 
+    Optional<RefreshToken> findByComp_CompEmail(String email);
+
     RefreshToken deleteAllByUserEmail(String email);
 
     List<RefreshToken> findAllByUserEmail(String email);
+
+    RefreshToken findByToken(String token);
 }

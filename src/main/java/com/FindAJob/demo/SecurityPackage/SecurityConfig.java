@@ -80,7 +80,9 @@ public class SecurityConfig {
                                 "/app/users/logIn",
                                 "/app/comp/create",
                                 "/app/comp/logIn",
-                                "/error").permitAll()
+                                "/error",
+                                "/app/refresh/userrefAcc",
+                                "/app/refresh/comprefAcc").permitAll()
 
                         //Authorized endpoints for reg_users
                         .requestMatchers("/app/users/update/",

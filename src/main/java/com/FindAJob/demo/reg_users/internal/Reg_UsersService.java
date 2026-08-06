@@ -68,16 +68,11 @@ public class Reg_UsersService {
 
             long num = this.checkUserTokens(auth.email());
 
-            if(num != 1) {
-                refRepo.deleteAllByUserEmail(auth.email());
-                 refTServ.createRefreshT(auth.email());
-            } else{
-                 refTServ.createRefreshT(auth.email());
-            }
+            String refT = refTServ.checkForExistingRefToken(user);
 
             return new AuthResDTO(user.getUsername(),
                     jwt.extractEmail(token),
-                    token);
+                    (token + "|||" + refT));
         } else {
             throw new RuntimeException("Invalid Credentials");
         }
@@ -226,8 +221,6 @@ public class Reg_UsersService {
 //Count number of tokens user has
 
     public Long checkUserTokens(String email) {
-        Reg_Users user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User does not exist"));
 
         List<RefreshToken> refTokens = refRepo.findAllByUserEmail(email);
 
