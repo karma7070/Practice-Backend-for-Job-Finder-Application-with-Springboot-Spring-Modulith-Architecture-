@@ -9,9 +9,11 @@ import com.FindAJob.demo.SecurityPackage.AuthResDTO;
 import com.FindAJob.demo.refreshtoken.RefreshToken;
 import com.FindAJob.demo.refreshtoken.internal.RefreshRepository;
 import com.FindAJob.demo.refreshtoken.internal.RefreshService;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Objects;
@@ -42,6 +44,12 @@ public class CompService {
 
     public CompResponseDTO addCompany(CompRequestDTO request) {
 
+        Optional<Companies> company = serv_repository.findByCompEmail(request.comp_email());
+
+        if(company.isPresent()){
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Company already exists");
+        }
+
         if (createCheck(request)) {
 
                 Companies company1 = this.RequestToComp(request);
@@ -52,14 +60,15 @@ public class CompService {
 
                     return resp1;
         } else {
-            throw new RuntimeException("Fill all Fields");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Fill all Fields");
         }
     }
 //Company logs in
     public AuthResDTO logIn(AuthDTO auth){
 
         Companies company = serv_repository.findByCompEmail(auth.email())
-                .orElseThrow(()-> new UsernameNotFoundException("Company not found!"));
+                .orElseThrow(()->
+                        new ResponseStatusException(HttpStatus.NOT_FOUND, "Company not found!"));
 
         Optional<RefreshToken> refreshToken = refRepo.findByUserEmail(auth.email());
 
@@ -79,7 +88,7 @@ public class CompService {
                                     "| RefreshToken |" + refToken));
                 } else {
 
-                    throw new RuntimeException("Invalid Credentials");
+                    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid Credentials");
 
                 }
 
@@ -91,7 +100,7 @@ public class CompService {
         Optional<Companies> opt_comp1 = serv_repository.findById(id);
 
             if(opt_comp1.isEmpty()){
-                throw new RuntimeException("Company doesn't exist!!");
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Company doesn't exist!!");
             }
 
                 Companies comp2 = this.checkAndReturn(request, opt_comp1.get());

@@ -57,7 +57,8 @@ public class Reg_UsersService {
     public AuthResDTO logIn(AuthDTO auth) {
 
         Reg_Users user = userRepository.findByEmail(auth.email())
-                .orElseThrow(() -> new UsernameNotFoundException("User doesn't exist"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "User doesn't exist"));
 
         //this encodes the entered password with same key and compares to the stored one
         if (passwordEncoder.matches(auth.password(), user.getPassword())) {
@@ -74,7 +75,8 @@ public class Reg_UsersService {
                     jwt.extractEmail(token),
                     (token + "|||" + refT));
         } else {
-            throw new RuntimeException("Invalid Credentials");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
+                    "Invalid Credentials");
         }
     }
 
@@ -86,7 +88,7 @@ public class Reg_UsersService {
         Optional<Reg_Users> opt_user1 = userRepository.findById(id);
 
         if(opt_user1.isEmpty()){
-            throw new UsernameNotFoundException("User doesn't exist!!");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User doesn't exist!!");
         }
 
         Reg_Users user2 = this.updateCheck(request, opt_user1.get());

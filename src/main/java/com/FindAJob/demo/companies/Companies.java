@@ -2,6 +2,7 @@ package com.FindAJob.demo.companies;
 
 import com.FindAJob.demo.SecurityPackage.UserRoles;
 import jakarta.persistence.*;
+import jakarta.validation.Valid;
 import org.jspecify.annotations.NonNull;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -16,13 +17,19 @@ public class Companies implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Valid
     private String comp_name;
+
+    @Valid
     private String location;
 
     @Column(name = "compemail")
     private String compEmail;
 
+    @Valid
     private String password;
+
+    @Valid
     private UserRoles role;
 
     public Companies(String comp_name,

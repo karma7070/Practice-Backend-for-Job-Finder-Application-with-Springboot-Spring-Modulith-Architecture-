@@ -3,6 +3,7 @@ package com.FindAJob.demo.reg_users;
 import com.FindAJob.demo.SecurityPackage.AuthDTO;
 import com.FindAJob.demo.SecurityPackage.AuthResDTO;
 import com.FindAJob.demo.reg_users.internal.Reg_UsersService;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -16,13 +17,13 @@ public class Reg_UserController {
     }
 
     @PostMapping(path = "/create")
-    public Reg_UserResponseDTO createUser(@RequestBody Reg_UserRequestDTO request){
+    public Reg_UserResponseDTO createUser(@Valid @RequestBody Reg_UserRequestDTO request){
         System.out.println("Controller reached");
         return service.CreateUser(request);
     }
 
     @PostMapping(path = "/logIn")
-    public AuthResDTO userLogIn(@RequestBody AuthDTO auth){
+    public AuthResDTO userLogIn(@Valid @RequestBody AuthDTO auth){
 
         return service.logIn(auth);
     }

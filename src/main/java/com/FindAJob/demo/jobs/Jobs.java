@@ -12,7 +12,7 @@ public class Jobs {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String job_title;
+    private String jobTitle;
     private String description;
     private Double salary;
     private JobFields field;
@@ -24,7 +24,7 @@ public class Jobs {
     @ManyToOne
     private Companies company;
 
-    public Jobs(String job_title,
+    public Jobs(String jobTitle,
                 String description,
                 Double salary,
                 JobFields field,
@@ -32,7 +32,7 @@ public class Jobs {
                 Instant posted_at,
                 String posted_by,
                 Companies company){
-        this.job_title = job_title;
+        this.jobTitle = jobTitle;
         this.description = description;
         this.salary = salary;
         this.field = field;
@@ -51,11 +51,11 @@ public class Jobs {
     }
 
     public String getJob_title() {
-        return job_title;
+        return jobTitle;
     }
 
     public void setJob_title(String job_title) {
-        this.job_title = job_title;
+        this.jobTitle = jobTitle;
     }
 
     public String getDescription() {

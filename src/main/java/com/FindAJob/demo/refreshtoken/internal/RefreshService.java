@@ -2,6 +2,7 @@ package com.FindAJob.demo.refreshtoken.internal;
 
 import com.FindAJob.demo.SecurityPackage.AuthDTO;
 import com.FindAJob.demo.SecurityPackage.AuthResDTO;
+import com.FindAJob.demo.SecurityPackage.Exceptions.InvalidCredentialsException;
 import com.FindAJob.demo.SecurityPackage.JWTService;
 import com.FindAJob.demo.companies.Companies;
 import com.FindAJob.demo.companies.internal.CompRepository;
@@ -11,9 +12,11 @@ import com.FindAJob.demo.refreshtoken.RefreshToken;
 import com.FindAJob.demo.reg_users.Reg_Users;
 import com.FindAJob.demo.reg_users.internal.Reg_UsersRepository;
 import com.FindAJob.demo.reg_users.internal.Reg_UsersService;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.security.SecureRandom;
 import java.sql.Ref;
@@ -80,39 +83,22 @@ public class RefreshService {
         long num = checkUserTokens(user.getEmail());
 
 
-        if(rToken.isPresent()){
+        rToken.ifPresent(repo::delete);
 
-            if(validateRefToken(rToken.get())){
-
-                return rToken.get().getToken();
-
-            } else{
-
-                refT = createRefreshT(rToken.get().getUser());
-
-                repo.delete(rToken.get());
+                refT = createRefreshT(user);
 
                 return refT;
-            }
-
-        } else{
-
-            refT = createRefreshT(user);
-
-            return refT;
-
-        }
 
     }
 
     public RefreshResDTO refreshAccessToken(RefreshReqDTO request) {
 
         Optional<RefreshToken> rToken = Optional.of(repo.findByUserEmail(request.email())
-                .orElseThrow(() -> new UsernameNotFoundException("Refresh Token not found!")));
-
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Refresh Token not found!" + request.token())));
         //String hashedToken = passwordEncoder.encode(request.token());
 
-        if(passwordEncoder.matches( request.token(), rToken.get().getToken())) {
+        if(passwordEncoder.matches(request.token(), rToken.get().getToken())) {
 
             String userEmail = rToken.get().getUser().getEmail();
 
@@ -157,7 +143,7 @@ public class RefreshService {
 
             }
         } else {
-            throw new UsernameNotFoundException("Invalid Refresh Token");}
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid Refresh Token");}
 
     }
 
@@ -183,7 +169,8 @@ public class RefreshService {
 
     public AuthResDTO revokeOrSuspendRefToken(String email){
         Optional<RefreshToken> refT = Optional.of(repo.findByUserEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("Refresh token doesn't exist")));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Refresh token doesn't exist")));
 
             RefreshToken rT = refT.get();
 
@@ -241,7 +228,7 @@ public String getRefToken(){
 
         String token = getRefToken();
 
-        RefreshToken refT = new RefreshToken(token,
+        RefreshToken refT = new RefreshToken(passwordEncoder.encode(token),
                                                 Instant.now().plus(Duration.ofDays(1/2)),
                                                   Instant.now(),
                                                 company);
@@ -261,30 +248,10 @@ public String getRefToken(){
       //check how many rTokens user has
         long num = checkUserTokens(comp.getCompEmail());
 
-
-        if(rToken.isPresent()){
-
-            if(validateRefToken(rToken.get())){
-
-                 return rToken.get().getToken();
-
-                } else{
-
-                  refT = createCompRefToken(rToken.get().getComp());
-
-                  repo.delete(rToken.get());
-
-                  return refT;
-                }
-
-            } else{
-
+        rToken.ifPresent(repo::delete);
             refT = createCompRefToken(comp);
 
             return refT;
-
-        }
-
     }
 
 
@@ -293,42 +260,47 @@ public String getRefToken(){
         Optional<RefreshToken> refToken = Optional.of(repo.findByComp_CompEmail(request.email())
                 .orElseThrow(() -> new UsernameNotFoundException("Refresh Token not found")));
 
-        RefreshToken rToken = refToken.get();
+        if(passwordEncoder.matches(request.token(), refToken.get().getToken())) {
 
-        String accToken = "";
+            RefreshToken rToken = refToken.get();
 
-        Companies comp = rToken.getComp();
+            String accToken = "";
 
-        if(validateRefToken(rToken)){
-            accToken = jwt.generateToken(rToken.getComp().getCompEmail(),
-                                        rToken.getComp().getComp_name(),
-                                        rToken.getComp().getRole());
+            Companies comp = rToken.getComp();
 
-            return new RefreshResDTO(rToken.getComp().getCompEmail(),
-                    accToken,
-                    rToken.getToken());
-        } else {
+            if (validateRefToken(rToken)) {
+                accToken = jwt.generateToken(rToken.getComp().getCompEmail(),
+                        rToken.getComp().getComp_name(),
+                        rToken.getComp().getRole());
 
-            repo.delete(rToken);
+                return new RefreshResDTO(rToken.getComp().getCompEmail(),
+                        accToken,
+                        rToken.getToken());
+            } else {
 
-            String token = getRefToken();
+                repo.delete(rToken);
 
-            RefreshToken rToken2 = new RefreshToken(token,
-                    Instant.now().plus(Duration.ofDays(1/2)),
-                    Instant.now(),
-                    comp);
+                String token = getRefToken();
 
-            accToken = jwt.generateToken(rToken2.getComp().getCompEmail(),
-                    rToken2.getComp().getComp_name(),
-                    rToken2.getComp().getRole());
+                RefreshToken rToken2 = new RefreshToken(token,
+                        Instant.now().plus(Duration.ofDays(1 / 2)),
+                        Instant.now(),
+                        comp);
 
-            repo.save(rToken2);
+                accToken = jwt.generateToken(rToken2.getComp().getCompEmail(),
+                        rToken2.getComp().getComp_name(),
+                        rToken2.getComp().getRole());
 
-            return new RefreshResDTO(comp.getCompEmail(),
-                    accToken,
-                    rToken2.getToken());
+                repo.save(rToken2);
+
+                return new RefreshResDTO(comp.getCompEmail(),
+                        accToken,
+                        rToken2.getToken());
+            }
+        } else{
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
+                    "Invalid Refresh Token");
         }
-
     }
 
 }
