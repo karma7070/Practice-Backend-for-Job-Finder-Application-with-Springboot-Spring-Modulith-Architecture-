@@ -77,7 +77,8 @@ public class JobsService {
 // Get job by Id
     public JobResponseDTO getAJob(Long id) {
 
-        Optional<Jobs> job = repository.findById(id);
+        Optional<Jobs> job = Optional.of(repository.findById(id).
+                orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Job not found!")));
 
         return JobResponseDTO.from(job.get());
 
@@ -165,23 +166,125 @@ public class JobsService {
       return JobResponseDTO.from(updatedJob);
 
     }
+
+    //Set Availability status
+
+    public JobResponseDTO setAvailabilityStatus(Long id, JobAvailReqDTO req){
+
+      Jobs job = repository.findById(id)
+              .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "Job not found!"));
+
+      if(req.status() == null){
+          throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Status missing");
+      }
+
+        switch (req.status()) {
+            case JobAvailability.AVAILABLE -> job.setAvailability(JobAvailability.AVAILABLE);
+            case JobAvailability.UNAVAILABLE -> job.setAvailability(JobAvailability.UNAVAILABLE);
+            case JobAvailability.PENDING_AVAILABILITY -> job.setAvailability(JobAvailability.PENDING_AVAILABILITY);
+            default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Status invalid");
+        }
+
+      repository.save(job);
+
+      return JobResponseDTO.from(job);
+    }
     
 //Delete job
 
     public JobResponseDTO deleteJob(Long id){
 
-        Optional<Jobs> job = repository.findById(id);
+        Optional<Jobs> job = Optional.of(repository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Job not found")));
 
-            if(job.isPresent()) {
+                 JobResponseDTO jobRes = new JobResponseDTO(
+                         job.get().getJob_title(),
+                         job.get().getDescription(),
+                         job.get().getSalary(),
+                         job.get().getField(),
+                         job.get().getAvailability(),
+                         job.get().getPosted_at(),
+                         (job.get().getCompany().getComp_name() + "______DELETED"),
+                         job.get().getCompany().getId()
+                 );
 
                 JobDeletedEvent event = new JobDeletedEvent(job.get().getId(), job.get().getJob_title());
 
                 publisher.publishEvent(event);
 
-                repository.deleteById(id);
+                repository.delete(job.get());
+    return jobRes;
+}
+
+//Return based on field
+    public List<JobResponseDTO> getByField(FieldReqDTO req){
+
+        List<Jobs> jobs = repository.findAllByField(req.field());
+
+        ArrayList<JobResponseDTO> responses = new ArrayList<>();
+
+            for(int i = 0; i < jobs.size(); i++){
+
+                Jobs job = jobs.get(i);
+
+                responses.add(JobResponseDTO.from(job));
             }
 
-        return null;
+        return responses;
+
+    }
+
+    //Search through jobs by specific categories
+
+    public List<JobResponseDTO> getJobsAttribute(SearchReqDTO req){
+
+    List<JobResponseDTO> response = new ArrayList<>();
+
+    if(req.jobTitle() != null){
+        List<Jobs> jobsByTitle =
+                repository.findAllByJobTitle(req.jobTitle());
+
+        for(int i = 0; i<jobsByTitle.size(); i++){
+            Jobs job = jobsByTitle.get(i);
+
+            response.add(JobResponseDTO.from(job));
+
+
+        }
+        return response;
+    }
+
+    if(req.avail() != null){
+        List<Jobs> jobsByAvail =
+                repository.findAllByAvailability(req.avail());
+
+        for(int i = 0; i<jobsByAvail.size(); i++){
+            Jobs job = jobsByAvail.get(i);
+
+            response.add(JobResponseDTO.from(job));
+
+
+        }
+        return response;
+    }
+
+    if(req.description() != null){
+        List<Jobs> jobsByDes =
+                repository.findAllByDescription(req.description());
+
+        for(int i = 0; i<jobsByDes.size(); i++){
+            Jobs job = jobsByDes.get(i);
+
+            response.add(JobResponseDTO.from(job));
+
+
+        }
+
+        return response;
+    }
+
+
+      return response;
     }
 
 

@@ -28,4 +28,9 @@ public class RefreshController {
     public RefreshResDTO refreshCompAccessToken(@RequestBody RefreshReqDTO req){
         return servRef.refreshCompAccToken(req);
     }
+
+    @DeleteMapping(path = "/deleteRefTokens")
+    public AuthResDTO deleteRefToken(@RequestBody String email){
+        return servRef.revokeOrSuspendRefToken(email);
+    }
 }

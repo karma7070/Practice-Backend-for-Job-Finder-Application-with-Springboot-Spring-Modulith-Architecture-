@@ -15,6 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -63,6 +64,31 @@ public class CompService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Fill all Fields");
         }
     }
+
+    //Get company by ID
+    public CompResponseDTO getCompByID(Long id){
+        Companies comp = serv_repository.findById(id)
+                .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "Company not found"));
+
+        return CompResponseDTO.from(comp);
+    }
+
+    //Get all companies
+    public List<CompResponseDTO> getAllComps(){
+        List<Companies> comps = serv_repository.findAll();
+
+        ArrayList<CompResponseDTO> responses = new ArrayList<>();
+
+        for(int i = 0; i < comps.size(); i++ ){
+           Companies comp = comps.get(i);
+
+           responses.add(CompResponseDTO.from(comp));
+        }
+
+        return responses;
+    }
+
+
 //Company logs in
     public AuthResDTO logIn(AuthDTO auth){
 
@@ -111,6 +137,21 @@ public class CompService {
     }
 
 
+    //Delete Company by id
+    public CompResponseDTO deleteCompany(Long id){
+        Companies comp = serv_repository.findById(id)
+                .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "Company not found!"));
+
+        CompResponseDTO responseDTO = new CompResponseDTO(
+                comp.getComp_name(),
+                comp.getLocation(),
+                (comp.getCompEmail() + "_____DELETED")
+        );
+
+        serv_repository.deleteById(id);
+
+        return responseDTO;
+    }
 
 
 
@@ -186,10 +227,9 @@ public class CompService {
        Optional <Companies> comp = Optional.of(serv_repository.findById(id)
                .orElseThrow(()-> new UsernameNotFoundException("User does not exist")));
 
-       if(comp.isPresent()) {
+
            return comp.get();
-       } else
-           return null;
+
     }
 
     public Optional<Companies> getUserByEmail(String email){

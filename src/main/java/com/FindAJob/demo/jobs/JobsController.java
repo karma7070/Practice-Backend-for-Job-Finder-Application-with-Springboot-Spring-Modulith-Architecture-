@@ -1,7 +1,9 @@
 package com.FindAJob.demo.jobs;
 
 import com.FindAJob.demo.jobs.internal.JobsService;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -49,8 +51,15 @@ public class JobsController {
     return service.updateJob(request, id);
   }
 
+  @PatchMapping(path = "/setAvailStatus/{id}")
+  public JobResponseDTO setAvailability(@PathVariable Long id,
+                                        @RequestBody JobAvailReqDTO req){
+
+    return service.setAvailabilityStatus(id, req);
+  }
+
   @DeleteMapping(path = "/delete/{id}")
-  public JobResponseDTO deleteJob(@RequestBody Long id){
+  public JobResponseDTO deleteJob(@PathVariable Long id){
 
     return service.deleteJob(id);
   }

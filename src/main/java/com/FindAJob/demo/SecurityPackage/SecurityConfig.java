@@ -85,25 +85,30 @@ public class SecurityConfig {
                                 "/app/refresh/comprefAcc").permitAll()
 
                         //Authorized endpoints for reg_users
-                        .requestMatchers("/app/users/update/",
-                                "/app/users/delete/",
+                        .requestMatchers("/app/users/update/{id}",
+                                "/app/users/delete/{id}",
                                 "/app/jobs/all",
                                 "/app/application/view_applications",
                                 "/app/application/apply").hasRole("Reg_User")
 
                         //Authorized endpoints for companies
                         .requestMatchers("/app/jobs/create",
-                                "/app/jobs/update",
-                                "/app/jobs/delete/",
+                                "/app/jobs/update/{id}",
+                                "/app/jobs/delete/{id}",
                                 "/app/application/comp_view_app",
                                 "/app/jobs/jobsbycompany",
                                 "/app/application/company_assesses/{id}").hasRole("Company")
 
 
-                        .requestMatchers("/app/jobs/one/{id}")
+                        .requestMatchers("/app/jobs/one/{id}",
+                                "/app/jobs/all")
                         .hasAnyRole("Reg_User", "Company")
 
-                        .anyRequest().authenticated()
+                        .requestMatchers("/app/users/delete/{id}",
+                                "/app/application/Adminget",
+                                "/app/refresh/deleteRefTokens",
+                                "/app/comp/delete/{id}").hasRole("Admin")
+
 
                 );
 

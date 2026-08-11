@@ -16,6 +16,7 @@ public class UserListener {
 
     @ApplicationModuleListener
     public void on(ApplicationMadeEvent event){
+
         System.out.println("Applied successfully");
     }
 }

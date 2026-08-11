@@ -146,7 +146,7 @@ public class ApplicationService {
             return responseArray;
     }
 
-//Company approves/denies application (for Companies)
+//Company approves/denies application
 
     public ApplicationResDTO setStatus(AppStatusDTO appStatus, Long id){
 
@@ -155,6 +155,10 @@ public class ApplicationService {
         if(apn.isEmpty()){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,
                     "Application doesn't exist");
+        }
+
+        if(appStatus == null){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Status is missing");
         }
 
         if(appStatus.status() == AppStatus.APPROVED) {
@@ -173,6 +177,21 @@ public class ApplicationService {
 
 
     //update application
+
+    public ApplicationResDTO updateApp(ApplicationReqDTO req, Long id){
+        Application app = repository.findById(id)
+                .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "Application does not exist"));
+
+            if(req.info() == null || req.info().isEmpty()){
+              throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Request can't be empty");
+            }
+
+                app.setInfo(req.info());
+
+                    repository.save(app);
+
+        return ApplicationResDTO.from(app);
+    }
 
                      /////////////////////////////
 ///////////////////////// Service Functions  ///////////////////////////

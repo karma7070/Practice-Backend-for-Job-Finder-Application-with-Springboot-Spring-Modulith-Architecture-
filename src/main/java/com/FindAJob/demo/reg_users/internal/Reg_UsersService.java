@@ -44,13 +44,48 @@ public class Reg_UsersService {
 
     public Reg_UserResponseDTO CreateUser(Reg_UserRequestDTO request){
 
+        Optional<Reg_Users> user = userRepository.findByEmail(request.email());
+
+        if(user.isPresent()){
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "User already exists");
+        }
+
         Reg_Users user1 = this.createCheck(request);
 
         userRepository.save(user1);
 
         Reg_UserResponseDTO resp1 = Reg_UserResponseDTO.from(user1);
 
+        jwt.generateToken(request.email(),
+                request.name(),
+                request.role());
+
         return resp1;
+    }
+
+    //Get user by ID
+    public Reg_UserResponseDTO getUserByID(Long id){
+        Reg_Users user = userRepository.findById(id)
+                .orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found!"));
+
+        return Reg_UserResponseDTO.from(user);
+    }
+
+    //Get all users
+    public List<Reg_UserResponseDTO> getAllUsers(){
+        List<Reg_Users> users = userRepository.findAll();
+
+        ArrayList<Reg_UserResponseDTO> responses = new ArrayList<>();
+
+        for(int i = 0; i < users.size(); i++){
+
+            Reg_Users user = users.get(i);
+
+            responses.add(Reg_UserResponseDTO.from(user));
+
+        }
+
+        return responses;
     }
 
 //User logs in
@@ -173,7 +208,7 @@ public class Reg_UsersService {
                 return user;
 
             } else {
-                throw new RuntimeException("Passwords don't match");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Passwords don't match");
             }
 
 
