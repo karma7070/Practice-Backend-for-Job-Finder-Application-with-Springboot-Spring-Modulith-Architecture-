@@ -9,6 +9,7 @@ import com.FindAJob.demo.SecurityPackage.AuthResDTO;
 import com.FindAJob.demo.refreshtoken.RefreshToken;
 import com.FindAJob.demo.refreshtoken.internal.RefreshRepository;
 import com.FindAJob.demo.refreshtoken.internal.RefreshService;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -90,6 +91,7 @@ public class CompService {
 
 
 //Company logs in
+@RateLimiter(name = "loginRateLimiter", fallbackMethod = "fallbacklogin")
     public AuthResDTO logIn(AuthDTO auth){
 
         Companies company = serv_repository.findByCompEmail(auth.email())
@@ -118,6 +120,10 @@ public class CompService {
 
                 }
 
+    }
+
+    public AuthResDTO fallbacklogin(AuthDTO auth, Throwable throwable){
+        throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "Too many log in attempts. Please try again later.");
     }
 
     //Update Company details

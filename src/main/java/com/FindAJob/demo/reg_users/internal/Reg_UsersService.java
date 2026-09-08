@@ -8,6 +8,7 @@ import com.FindAJob.demo.refreshtoken.RefreshToken;
 import com.FindAJob.demo.refreshtoken.internal.RefreshRepository;
 import com.FindAJob.demo.refreshtoken.internal.RefreshService;
 import com.FindAJob.demo.reg_users.*;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -89,6 +90,7 @@ public class Reg_UsersService {
     }
 
 //User logs in
+    @RateLimiter(name = "loginRateLimiter", fallbackMethod = "fallbacklogin")
     public AuthResDTO logIn(AuthDTO auth) {
 
         Reg_Users user = userRepository.findByEmail(auth.email())
@@ -113,6 +115,10 @@ public class Reg_UsersService {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
                     "Invalid Credentials");
         }
+    }
+
+    public AuthResDTO fallbacklogin(AuthDTO auth, Throwable throwable){
+        throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "Too many log in attempts. Please try again later.");
     }
 
 //Update User info

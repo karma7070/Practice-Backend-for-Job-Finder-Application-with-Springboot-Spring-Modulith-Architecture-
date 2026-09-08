@@ -41,7 +41,7 @@ public class Companies implements UserDetails {
         this.location = location;
         this.compEmail = compEmail;
         this.password = password;
-        this.role = role;
+        this.role = UserRoles.Company;
     }
 
     public Companies() {

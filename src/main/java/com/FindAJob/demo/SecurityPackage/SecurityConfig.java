@@ -82,7 +82,10 @@ public class SecurityConfig {
                                 "/app/comp/logIn",
                                 "/error",
                                 "/app/refresh/userrefAcc",
-                                "/app/refresh/comprefAcc").permitAll()
+                                "/app/refresh/comprefAcc",
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html").permitAll()
 
                         //Authorized endpoints for reg_users
                         .requestMatchers("/app/users/update/{id}",

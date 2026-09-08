@@ -28,7 +28,6 @@ public class AuthFilter extends OncePerRequestFilter {
 
     private final JWTService jwtSvc;
     private final CustomUserDetailsService userDetServ;
-    private static String compTok;
 
 
     public AuthFilter(JWTService jwtSvc,
