@@ -44,6 +44,7 @@ public class CompService {
 
     // ////ADD A COMPANY
 
+    @RateLimiter(name = "JobListingRL", fallbackMethod = "JobListingFBM")
     public CompResponseDTO addCompany(CompRequestDTO request) {
 
         Optional<Companies> company = serv_repository.findByCompEmail(request.comp_email());
@@ -64,6 +65,11 @@ public class CompService {
         } else {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Fill all Fields");
         }
+    }
+
+    public CompResponseDTO JobListingFBM(CompRequestDTO req){
+        throw new ResponseStatusException
+                (HttpStatus.TOO_MANY_REQUESTS, "Too many job listing or creation attempts. Please try again later");
     }
 
     //Get company by ID
@@ -88,6 +94,8 @@ public class CompService {
 
         return responses;
     }
+
+
 
 
 //Company logs in
