@@ -9,10 +9,14 @@ import com.FindAJob.demo.SecurityPackage.AuthResDTO;
 import com.FindAJob.demo.refreshtoken.RefreshToken;
 import com.FindAJob.demo.refreshtoken.internal.RefreshRepository;
 import com.FindAJob.demo.refreshtoken.internal.RefreshService;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -40,7 +44,14 @@ public class CompService {
 
     // ////ADD A COMPANY
 
+    @RateLimiter(name = "JobListingRL", fallbackMethod = "JobListingFBM")
     public CompResponseDTO addCompany(CompRequestDTO request) {
+
+        Optional<Companies> company = serv_repository.findByCompEmail(request.comp_email());
+
+        if(company.isPresent()){
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Company already exists");
+        }
 
         if (createCheck(request)) {
 
@@ -52,14 +63,48 @@ public class CompService {
 
                     return resp1;
         } else {
-            throw new RuntimeException("Fill all Fields");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Fill all Fields");
         }
     }
+
+    public CompResponseDTO JobListingFBM(CompRequestDTO req){
+        throw new ResponseStatusException
+                (HttpStatus.TOO_MANY_REQUESTS, "Too many job listing or creation attempts. Please try again later");
+    }
+
+    //Get company by ID
+    public CompResponseDTO getCompByID(Long id){
+        Companies comp = serv_repository.findById(id)
+                .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "Company not found"));
+
+        return CompResponseDTO.from(comp);
+    }
+
+    //Get all companies
+    public List<CompResponseDTO> getAllComps(){
+        List<Companies> comps = serv_repository.findAll();
+
+        ArrayList<CompResponseDTO> responses = new ArrayList<>();
+
+        for(int i = 0; i < comps.size(); i++ ){
+           Companies comp = comps.get(i);
+
+           responses.add(CompResponseDTO.from(comp));
+        }
+
+        return responses;
+    }
+
+
+
+
 //Company logs in
+@RateLimiter(name = "loginRateLimiter", fallbackMethod = "fallbacklogin")
     public AuthResDTO logIn(AuthDTO auth){
 
         Companies company = serv_repository.findByCompEmail(auth.email())
-                .orElseThrow(()-> new UsernameNotFoundException("Company not found!"));
+                .orElseThrow(()->
+                        new ResponseStatusException(HttpStatus.NOT_FOUND, "Company not found!"));
 
         Optional<RefreshToken> refreshToken = refRepo.findByUserEmail(auth.email());
 
@@ -79,10 +124,14 @@ public class CompService {
                                     "| RefreshToken |" + refToken));
                 } else {
 
-                    throw new RuntimeException("Invalid Credentials");
+                    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid Credentials");
 
                 }
 
+    }
+
+    public AuthResDTO fallbacklogin(AuthDTO auth, Throwable throwable){
+        throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "Too many log in attempts. Please try again later.");
     }
 
     //Update Company details
@@ -91,7 +140,7 @@ public class CompService {
         Optional<Companies> opt_comp1 = serv_repository.findById(id);
 
             if(opt_comp1.isEmpty()){
-                throw new RuntimeException("Company doesn't exist!!");
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Company doesn't exist!!");
             }
 
                 Companies comp2 = this.checkAndReturn(request, opt_comp1.get());
@@ -102,6 +151,21 @@ public class CompService {
     }
 
 
+    //Delete Company by id
+    public CompResponseDTO deleteCompany(Long id){
+        Companies comp = serv_repository.findById(id)
+                .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "Company not found!"));
+
+        CompResponseDTO responseDTO = new CompResponseDTO(
+                comp.getComp_name(),
+                comp.getLocation(),
+                (comp.getCompEmail() + "_____DELETED")
+        );
+
+        serv_repository.deleteById(id);
+
+        return responseDTO;
+    }
 
 
 
@@ -177,10 +241,9 @@ public class CompService {
        Optional <Companies> comp = Optional.of(serv_repository.findById(id)
                .orElseThrow(()-> new UsernameNotFoundException("User does not exist")));
 
-       if(comp.isPresent()) {
+
            return comp.get();
-       } else
-           return null;
+
     }
 
     public Optional<Companies> getUserByEmail(String email){

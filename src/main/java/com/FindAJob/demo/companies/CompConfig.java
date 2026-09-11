@@ -25,13 +25,7 @@ public class CompConfig implements CommandLineRunner{
   public void run(String @NonNull ... args) throws Exception {
     if(comprepo.count() == 0){//counts number of rows in a table and if there are non it inserts data else... yknow.
         List<Companies> companies = List.of(
-                new Companies(
-                        "Google",
-                        "Mountain View, California",
-                        "careers@google.com",
-                        passWE.encode("njcalmlkds"),
-                        UserRoles.Company
-                ),
+
 
                 new Companies(
                         "Microsoft",

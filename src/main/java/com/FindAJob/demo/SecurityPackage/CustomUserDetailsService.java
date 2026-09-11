@@ -53,7 +53,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     }
 
-    public UserDetails setUser(){
+    public UserDetails getUserDetail(){
         return user_n;
     }
 

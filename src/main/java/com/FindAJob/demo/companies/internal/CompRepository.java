@@ -18,4 +18,6 @@ public interface CompRepository extends JpaRepository<Companies, Long> {
 
     Optional<Companies> findByCompEmail(String compEmail);
 
+    boolean existsByCompEmail(String email);
+
 }

@@ -31,7 +31,6 @@ public class CompanyListener {
     @ApplicationModuleListener
     public void on(ApplicationMadeEvent event){
         String info = event.info();
-
         System.out.println(info);
 
     }

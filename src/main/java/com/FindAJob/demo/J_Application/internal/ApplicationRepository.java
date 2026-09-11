@@ -11,5 +11,7 @@ import java.util.Optional;
 @Repository
 public interface ApplicationRepository extends JpaRepository<Application, Long> {
 
-    List<Application> findByUserEmail(String email);
+    List<Application> findAllByUserEmail(String email);
+
+    Application findApplicationByJobIdAndUserId(Long id, Long id2);
 }

@@ -8,6 +8,7 @@ import com.FindAJob.demo.refreshtoken.RefreshToken;
 import com.FindAJob.demo.refreshtoken.internal.RefreshRepository;
 import com.FindAJob.demo.refreshtoken.internal.RefreshService;
 import com.FindAJob.demo.reg_users.*;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -44,20 +45,57 @@ public class Reg_UsersService {
 
     public Reg_UserResponseDTO CreateUser(Reg_UserRequestDTO request){
 
+        Optional<Reg_Users> user = userRepository.findByEmail(request.email());
+
+        if(user.isPresent()){
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "User already exists");
+        }
+
         Reg_Users user1 = this.createCheck(request);
 
         userRepository.save(user1);
 
         Reg_UserResponseDTO resp1 = Reg_UserResponseDTO.from(user1);
 
+        jwt.generateToken(request.email(),
+                request.name(),
+                request.role());
+
         return resp1;
     }
 
+    //Get user by ID
+    public Reg_UserResponseDTO getUserByID(Long id){
+        Reg_Users user = userRepository.findById(id)
+                .orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found!"));
+
+        return Reg_UserResponseDTO.from(user);
+    }
+
+    //Get all users
+    public List<Reg_UserResponseDTO> getAllUsers(){
+        List<Reg_Users> users = userRepository.findAll();
+
+        ArrayList<Reg_UserResponseDTO> responses = new ArrayList<>();
+
+        for(int i = 0; i < users.size(); i++){
+
+            Reg_Users user = users.get(i);
+
+            responses.add(Reg_UserResponseDTO.from(user));
+
+        }
+
+        return responses;
+    }
+
 //User logs in
+    @RateLimiter(name = "loginRateLimiter", fallbackMethod = "fallbacklogin")
     public AuthResDTO logIn(AuthDTO auth) {
 
         Reg_Users user = userRepository.findByEmail(auth.email())
-                .orElseThrow(() -> new UsernameNotFoundException("User doesn't exist"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "User doesn't exist"));
 
         //this encodes the entered password with same key and compares to the stored one
         if (passwordEncoder.matches(auth.password(), user.getPassword())) {
@@ -74,8 +112,13 @@ public class Reg_UsersService {
                     jwt.extractEmail(token),
                     (token + "|||" + refT));
         } else {
-            throw new RuntimeException("Invalid Credentials");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
+                    "Invalid Credentials");
         }
+    }
+
+    public AuthResDTO fallbacklogin(AuthDTO auth, Throwable throwable){
+        throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "Too many log in attempts. Please try again later.");
     }
 
 //Update User info
@@ -86,7 +129,7 @@ public class Reg_UsersService {
         Optional<Reg_Users> opt_user1 = userRepository.findById(id);
 
         if(opt_user1.isEmpty()){
-            throw new UsernameNotFoundException("User doesn't exist!!");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User doesn't exist!!");
         }
 
         Reg_Users user2 = this.updateCheck(request, opt_user1.get());
@@ -171,7 +214,7 @@ public class Reg_UsersService {
                 return user;
 
             } else {
-                throw new RuntimeException("Passwords don't match");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Passwords don't match");
             }
 
 

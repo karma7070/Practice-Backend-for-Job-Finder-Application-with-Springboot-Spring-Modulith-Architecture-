@@ -8,9 +8,12 @@ import com.FindAJob.demo.jobs.internal.JobsService;
 import com.FindAJob.demo.reg_users.Reg_Users;
 import com.FindAJob.demo.reg_users.internal.Reg_UsersService;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.InvalidClassException;
 import java.time.Instant;
@@ -53,17 +56,16 @@ public class ApplicationService {
         //  if(email.email() != auth.email)
 //finds applications based on user emails
 
+        //uses the context holder to get the email, smart
         String email = Objects.requireNonNull(SecurityContextHolder
                         .getContext()
                         .getAuthentication())
                 .getName();
 
         List<Application> applications =
-                repository.findByUserEmail(email);
+                repository.findAllByUserEmail(email);
 
         List<ApplicationResDTO> responses = new ArrayList<>();
-
-        if(!(applications.isEmpty())){
 
             for(int i = 0; i<applications.size(); i++){
 
@@ -74,16 +76,22 @@ public class ApplicationService {
             }
             return responses;
 
-        } else {
-
-            throw new UsernameNotFoundException("User has no applications");
-        }
-
     }
 
 //create application for USERS
 
     public ApplicationResDTO createApn(ApplicationReqDTO request){
+
+        Optional<Application> apn = Optional.ofNullable(repository
+                .findApplicationByJobIdAndUserId(request.jobId(), request.userId()));
+
+        if(apn.isEmpty()){
+            throw new ResponseStatusException
+                    (HttpStatus.CONFLICT, "Application for Job:"
+                            + request.jobId()
+                            + "By" + request.userId()
+                            + "already exists");
+        }
 
         ApplicationReqDTO request2 = this.checkForEmptyReq(request);
 
@@ -131,30 +139,26 @@ public class ApplicationService {
 
                 responseArray.add(ApplicationResDTO.from(app));
 
-            } else {
-                throw new UsernameNotFoundException("Email doesn't match");
             }
 
         }
-        if(!(responseArray.isEmpty())){
 
             return responseArray;
-
-        } else{
-
-            throw new UsernameNotFoundException("No user applied yet");
-        }
-
     }
 
-//Company approves/denies application (for Companies)
+//Company approves/denies application
 
     public ApplicationResDTO setStatus(AppStatusDTO appStatus, Long id){
 
         Optional<Application> apn = repository.findById(id);
 
         if(apn.isEmpty()){
-            throw new RuntimeException("Application doesn't exist");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "Application doesn't exist");
+        }
+
+        if(appStatus == null){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Status is missing");
         }
 
         if(appStatus.status() == AppStatus.APPROVED) {
@@ -173,6 +177,21 @@ public class ApplicationService {
 
 
     //update application
+
+    public ApplicationResDTO updateApp(ApplicationReqDTO req, Long id){
+        Application app = repository.findById(id)
+                .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "Application does not exist"));
+
+            if(req.info() == null || req.info().isEmpty()){
+              throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Request can't be empty");
+            }
+
+                app.setInfo(req.info());
+
+                    repository.save(app);
+
+        return ApplicationResDTO.from(app);
+    }
 
                      /////////////////////////////
 ///////////////////////// Service Functions  ///////////////////////////
