@@ -1,7 +1,8 @@
 package com.FindAJob.demo.companies;
 
 import com.FindAJob.demo.SecurityPackage.UserRoles;
-import com.FindAJob.demo.companies.internal.CompRepository;
+import com.FindAJob.demo.companies.domain.repos.CompRepository;
+import com.FindAJob.demo.companies.domain.entities.Companies;
 import org.jspecify.annotations.NonNull;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Configuration;

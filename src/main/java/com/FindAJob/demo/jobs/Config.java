@@ -1,10 +1,13 @@
 package com.FindAJob.demo.jobs;
 
 import com.FindAJob.demo.SecurityPackage.UserRoles;
-import com.FindAJob.demo.companies.internal.CompRepository;
-import com.FindAJob.demo.companies.internal.CompService;
-import com.FindAJob.demo.companies.Companies;
-import com.FindAJob.demo.jobs.internal.JobsRepository;
+import com.FindAJob.demo.companies.domain.repos.CompRepository;
+import com.FindAJob.demo.companies.services.CompService;
+import com.FindAJob.demo.companies.domain.entities.Companies;
+import com.FindAJob.demo.jobs.domain.repos.JobsRepository;
+import com.FindAJob.demo.jobs.domain.entities.Jobs;
+import com.FindAJob.demo.jobs.publicenums.JobAvailability;
+import com.FindAJob.demo.jobs.publicenums.JobFields;
 import org.jspecify.annotations.NonNull;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Configuration;

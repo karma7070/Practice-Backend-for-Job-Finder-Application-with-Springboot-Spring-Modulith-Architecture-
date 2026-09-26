@@ -1,15 +1,13 @@
 package com.FindAJob.demo.companies.internal;
 
 import com.FindAJob.demo.SecurityPackage.UserRoles;
-import com.FindAJob.demo.companies.Companies;
-import com.FindAJob.demo.companies.internal.CompRepository;
+import com.FindAJob.demo.companies.domain.entities.Companies;
+import com.FindAJob.demo.companies.domain.repos.CompRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
-import org.springframework.modulith.test.ApplicationModuleTest; // 1. CRITICAL FOR SPRING MODULITH
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 
 @DataJpaTest
